@@ -1,0 +1,6 @@
+# don't need log files and stuff with latex documents
+
+*.log
+*.aux
+*.dvi
+*.ps
