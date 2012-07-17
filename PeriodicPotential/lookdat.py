@@ -18,7 +18,7 @@ def main():
     # before anything get us into the NormAllDat directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir("NormAllDat")
+    os.chdir(os.path.expanduser("~/Data/PP/NormAllDat"))
     # lets name all the new folders just Data#/ 
     # don't want to write over any folder so check and see what number we are already on
     allDir = os.listdir(".")

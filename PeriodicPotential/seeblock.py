@@ -16,7 +16,7 @@ def main():
 
 
 
-    os.chdir("NormAllDat/"+dataFile)
+    os.chdir(os.path.expanduser("~/Data/PP/NormAllDat/"+dataFile))
     
     files = os.listdir(".")
 
