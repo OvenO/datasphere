@@ -1,9 +1,12 @@
 #!/usr/bin/python
 #/opt/local/bin/python2.7
-import pylab as pl
+#import pylab as pl
 import ECclass as ec
 import os
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
 from scipy.integrate import odeint
+import scipy as pl
 
 def main():
     # NEED TO HAVE EMPTY DIRECTORY "Data0"
@@ -11,14 +14,14 @@ def main():
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir("NormAll")
+    os.chdir(os.path.expanduser("~/Data/EC/NormAll"))
     # lets name all the new folders just Data#/ 
     # don't want to write over any folder so check and see what number we are already on
     allDir = os.listdir(".")
     numdir = 0
     for l,z in enumerate(allDir):
         numdir = l        
-    numdir += 2
+    numdir += 1
     
     os.mkdir("Data" + str(numdir))
     os.chdir("Data" + str(numdir))
@@ -37,7 +40,7 @@ def main():
     w = 1.0
     damp = .1
 
-    numParamChecks = 100
+    numParamChecks = 1
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k

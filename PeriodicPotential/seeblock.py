@@ -1,3 +1,8 @@
+#import pylab as pl
+import sys
+import numpy
+#sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+sys.path.append("/users/o/m/omyers/puthere/matplotlib/build/lib.linux-x86_64-2.7")
 import pylab as pl
 import os
 
@@ -69,8 +74,8 @@ def main():
             
         fig = pl.figure()
         ax = fig.add_subplot(111)
-        ax.scatter(firstBptsx,firstBptsvx)
-        ax.scatter(secondBptsx,secondBptsvx)
+        ax.scatter(firstBptsx,firstBptsvx,s=.1)
+        ax.scatter(secondBptsx,secondBptsvx,s=.1)
         fig.savefig(str(a)+"blocks.png")
 
 

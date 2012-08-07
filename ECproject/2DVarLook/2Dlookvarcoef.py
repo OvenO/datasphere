@@ -16,20 +16,20 @@ def main():
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir(os.path.expanduser("~/Data/EC/2DNormAll"))
+    os.chdir(os.path.expanduser("~/Data/EC/2DNormAllVar/VarCoef"))
 
-    dt = .05 
+    dt = .01 
     # total number of iterations to perform
     totIter = 1000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = 1.0
+    coef = 3.5
     k = 1.0
     w = 1.0
     damp = .1
-    g = .1
+    g = .13
 
     numParamChecks = 50
 
@@ -37,18 +37,21 @@ def main():
     modNum = 2*pl.pi/k
     
     # increase coeff by:
-    incCf = .01
+    incCf = .1
     # make ec object
     elc = ec.electricCurtain()
     
     # initial conditions
-    initx = 1.5
-    inity = 1.8
     initvx = 0.0
     initvy = 0.0
+    initx = 1.5
+    inity = 1.8
+
+    # initial conditions vector
+    # set up: [xdot,ydot,x,y]
+    x0 = pl.array([initvx,initvy,initx,inity])
 
     for j in range(numParamChecks):
-        print(j)
         # lets name all the new folders just Data#/ 
         # don't want to write over any folder so check and see what number we are already on
         allDir = os.listdir(".")
@@ -60,9 +63,6 @@ def main():
         os.mkdir("Data" + str(numdir))
         os.chdir("Data" + str(numdir))
 
-        # initial conditions vector
-        # set up: [xdot,ydot,x,y]
-        x0 = pl.array([initvx,initvy,initx,inity])
         coef += incCf
         apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
         sol = odeint(apx.f,x0,time)
@@ -70,7 +70,6 @@ def main():
         for a in range(len(sol[:,0])):
             sol[a,2] = sol[a,2]%modNum
 
-        print(sol[:,1])
         
         checkT = 0.0
         poinCarSx= pl.array([])
@@ -89,6 +88,12 @@ def main():
             # the +.5 efectivly rounds the number apropriatly
             checkPoint = int(checkT +.5)
             intst += 1
+        
+        print("last phase space info for feedback \nin form: [xdot,ydot,x,y]")
+        print(sol[-1,:])
+        print("this is the time:")
+        print(time[-1])
+
 
         fig1 = pl.figure()
         ax1 = fig1.add_subplot(111)
@@ -258,13 +263,41 @@ def main():
                 +"\ninitial vy: " +str(initvy) )
         outFile.close()
 
+        os.chdir("..")
+
+        # this is the feedback information to make the transitions smooth
+        x0 = sol[-1,:]
+        time+=totTime
+
+        # try to garbage colect (manualy) some of the matplotlib objects inorder to fix the memory
+        # error
+        del fig1
+        del fig13
+        del fig3
+        del fig12
+        del fig14
+        del fig4
+        del fig11
+        del fig7
+        del fig8
+
+        del ax1
+        del ax13
+        del ax3
+        del ax12
+        del ax14
+        del ax4
+        del ax11
+        del ax7
+        del ax8
+
         del sol
         del poinCarSx
         del poinCarSxdot
         del poinCarSy
         del poinCarSydot
 
-        os.chdir("..")
+
     
 
 if __name__ == '__main__':

@@ -1,5 +1,8 @@
-import pylab as pl
+#import pylab as pl
 from datetime import datetime
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
 import os
 
 
@@ -30,6 +33,7 @@ class periodicPotential(object):
     def f(self,xarr,t):
         x1dot = -self.drg*xarr[0] + self.coef*pl.cos(t)*pl.sin(xarr[1])
         x2dot = xarr[0]
+        # in form [xvelocity,xposition]
         return [x1dot,x2dot]
 
 # Start with a simpe symetric periodic potential. Just to be clear the particle is in the x,y plane
@@ -64,3 +68,16 @@ class secondSimple2DSymetricPP(object):
         x4dot = arr[1]
         return [x1dot,x2dot,x3dot,x4dot]
 
+# We want to see if there is some mapping from cos(t)cos(x) to cos(y)cos(x) + const force (in y) i
+# I'm sure there is a way to show it mathmaticaly but this should be pretty easy to see if the
+# dynamics are simular.
+class tilted2DPP(object):
+    def __init__(self,coef,drgCoef):
+        self.coef = coef
+        self.drg = drgCoef
+    def f(self,arr,t):
+        x1dot = -self.drg*arr[0] + self.coef*pl.sin(arr[2])*pl.cos(arr[3])
+        x2dot = -self.drg*arr[1] + self.coef*pl.sin(arr[3])*pl.cos(arr[2]) + self.coef
+        x3dot = arr[0]
+        x4dot = arr[1]
+        return [x1dot,x2dot,x3dot,x4dot]

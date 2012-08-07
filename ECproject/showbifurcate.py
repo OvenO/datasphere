@@ -1,8 +1,13 @@
 #!/usr/bin/python
 #/opt/local/bin/python2.7
+#import pylab as pl
+import os
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+sys.path.append("/users/o/m/omyers/puthere/matplotlib/build/lib.linux-x86_64-2.7")
+sys.path.append("/users/o/m/omyers/datasphere/ECproject")
 import pylab as pl
 import ECclass as ec
-import os
 from scipy.integrate import odeint
 
 def main():
@@ -39,7 +44,7 @@ def main():
         print(j)
         # initial conditions vector
         # set up: [xdot,ydot,x,y]
-        x0 = pl.array([0.0,0.0,2.5,1.0])
+        x0 = pl.array([0.0,0.0,2.3,1.0])
         coef += incCf
         apx = ec.surfCentreLineApx(coef,k,w,damp)
         sol = odeint(apx.f,x0,time)

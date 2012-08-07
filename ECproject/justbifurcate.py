@@ -1,6 +1,9 @@
 #!/usr/bin/python
 #/opt/local/bin/python2.7
-import pylab as pl
+#import pylab as pl
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
 import ECclass as ec
 import os
 from scipy.integrate import odeint
@@ -11,7 +14,7 @@ def main():
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir("NormAll")
+    os.chdir(os.path.expanduser("~/Data/EC/NormAll"))
 
     bifurcate = True
 

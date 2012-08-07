@@ -7,9 +7,14 @@
 #===============================================================================================
 
 
-import pylab as pl
-import ECclass as ec
+#import pylab as pl
 import os
+import sys
+import numpy
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
+sys.path.append("/users/o/m/omyers/datasphere/PeriodicPotential")
+import PPclass as pp
 from scipy.integrate import odeint
 
 def main():
@@ -25,7 +30,7 @@ def main():
     numdir = 0
     for l,z in enumerate(allDir):
         numdir = l        
-    numdir += 2
+    numdir += 1
     
     os.mkdir("Data" + str(numdir))
     os.chdir("Data" + str(numdir))
@@ -35,7 +40,7 @@ def main():
 
     dt = .005 
     # total number of iterations to perform
-    totIter = 10000
+    totIter = 100000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
 
@@ -45,24 +50,22 @@ def main():
     damp = .1
 
     #lower left corner of block
-    initialx = 1.0
+    initialx = 0.0
     initialvx = 0.0
 
-    numptsx = 90
-    numptsvx = 70
+    numptsx = 200
+    numptsvx = 200
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
     # increase x  by:
-    incx = .05
+    incx = .03
 
     # increase vx  by:
     incvx = .03
 
 
-    # make ec object
-    elc = ec.electricCurtain()
     
     for alpha in range(numptsx):
         for beta in range(numptsvx):
@@ -70,13 +73,13 @@ def main():
             print("beta: " + str(beta))
             
             # initial conditions vector
-            # set up: [xdot,ydot,x,y]
-            x0 = pl.array([initialvx+beta*incvx,0.0,initialx+alpha*incx,1.0])
+            # set up: [xdot,x]
+            x0 = pl.array([initialvx+beta*incvx,initialx+alpha*incx])
             # coef += incCf
-            apx = ec.surfCentreLineApx(coef,k,w,damp)
+            apx = pp.periodicPotential(coef,damp)
             sol = odeint(apx.f,x0,time)
             for a in range(len(sol[:,0])):
-                sol[a,2] = sol[a,2]%modNum
+                sol[a,1] = sol[a,1]%modNum
 
             
             checkT = 0.0
@@ -86,7 +89,7 @@ def main():
             checkPoint = 0
             while (checkPoint < totIter):
             #    print(checkPoint)
-                poinCarSx = pl.append(poinCarSx,sol[checkPoint,2])
+                poinCarSx = pl.append(poinCarSx,sol[checkPoint,1])
                 poinCarSxdot = pl.append(poinCarSxdot,sol[checkPoint,0])
                 checkT = intst*2*pl.pi/(w*dt)
                 # the +.5 efectivly rounds the number apropriatly
@@ -99,7 +102,7 @@ def main():
             dataOut.write("{0:s},{1:15s},{2:15s}".format("x position", "x velocity","time"))
             dataOut.write("\n")
             for line in range(totIter):
-                dataOut.write("{0:.5f},{1:15.5f},{2:15.3f}".format(sol[line,2],sol[line,0],line*dt))
+                dataOut.write("{0:.5f},{1:15.5f},{2:15.3f}".format(sol[line,1],sol[line,0],line*dt))
                 dataOut.write("\n")
             dataOut.close()
 

@@ -1,5 +1,8 @@
-import pylab as pl
+#import pylab as pl
 from datetime import datetime
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
 import os
 
 
@@ -140,12 +143,13 @@ class surfCentreLineApx(object):
         x4dot = 0.0
         return [x1dot,x2dot,x3dot,x4dot]
 class CentreLineApx(object):
-    def __init__(self,coef,k,w,drgCoef,surf):
+    def __init__(self,coef,k,w,drgCoef,surf,g):
         self.coef = coef
         self.k = k
         self.w = w
         self.drg = drgCoef
         self.surf = surf
+        self.g = g
     
     # just make normal functions to try to pass into odeint function. Should be much faster
     def f(self,xarr,t):
@@ -161,7 +165,7 @@ class CentreLineApx(object):
             temp2+=pl.sign(xarr[3]-self.surf)*pl.sinh(self.k*(self.surf+abs(xarr[3]-self.surf)))*pl.cos(self.w*t-i*pl.pi)/(pl.cosh(self.k*(self.surf+abs(xarr[3]-self.surf)))-pl.cos(self.k*xarr[2]-i*pl.pi)) 
         temp2 = temp2*self.coef
         temp2 -= self.drg*xarr[1]
-        temp2 -= pl.sign(xarr[3]-self.surf)*1
+        temp2 -= pl.sign(xarr[3]-self.surf)*self.g
         x2dot = temp2
         x3dot = xarr[0]
         x4dot = xarr[1]

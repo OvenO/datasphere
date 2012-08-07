@@ -1,8 +1,11 @@
 #!/usr/bin/python
 #/opt/local/bin/python2.7
-import pylab as pl
+#import pylab as pl
 import PPclass as pp
 import os
+import sys
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
 from scipy.integrate import odeint
 
 def main():

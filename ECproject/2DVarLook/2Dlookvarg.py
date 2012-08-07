@@ -16,34 +16,34 @@ def main():
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir(os.path.expanduser("~/Data/EC/2DNormAll"))
+    os.chdir(os.path.expanduser("~/Data/EC/2DNormAllVar/VarG"))
 
-    dt = .05 
+    dt = .005 
     # total number of iterations to perform
-    totIter = 1000000
+    totIter = 2000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = 1.0
+    coef = 2.5
     k = 1.0
     w = 1.0
     damp = .1
-    g = .1
+    g = .15
 
-    numParamChecks = 50
+    numParamChecks = 1
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
     # increase coeff by:
-    incCf = .01
+    incg = .00
     # make ec object
     elc = ec.electricCurtain()
     
     # initial conditions
     initx = 1.5
-    inity = 1.8
+    inity = 2.0
     initvx = 0.0
     initvy = 0.0
 
@@ -63,7 +63,7 @@ def main():
         # initial conditions vector
         # set up: [xdot,ydot,x,y]
         x0 = pl.array([initvx,initvy,initx,inity])
-        coef += incCf
+        g += incg
         apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
         sol = odeint(apx.f,x0,time)
         
@@ -257,12 +257,6 @@ def main():
                 +"\ninitial vx: " +str(initvx)\
                 +"\ninitial vy: " +str(initvy) )
         outFile.close()
-
-        del sol
-        del poinCarSx
-        del poinCarSxdot
-        del poinCarSy
-        del poinCarSydot
 
         os.chdir("..")
     
