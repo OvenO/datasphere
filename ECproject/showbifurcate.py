@@ -13,9 +13,9 @@ from scipy.integrate import odeint
 def main():
     bifurcate = True
 
-    dt = .01 
+    dt = .005 
     # total number of iterations to perform
-    totIter = 100000
+    totIter = 1000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
 
@@ -40,11 +40,12 @@ def main():
         fig8 = pl.figure()
         ax8 = fig8.add_subplot(111)
 
+    # initial conditions vector
+    # set up: [xdot,ydot,x,y]
+    x0 = pl.array([0.0,0.0,2.3,1.0])
+
     for j in range(numParamChecks):
         print(j)
-        # initial conditions vector
-        # set up: [xdot,ydot,x,y]
-        x0 = pl.array([0.0,0.0,2.3,1.0])
         coef += incCf
         apx = ec.surfCentreLineApx(coef,k,w,damp)
         sol = odeint(apx.f,x0,time)
@@ -67,11 +68,14 @@ def main():
             intst += 1
 
         ax8.scatter(pl.zeros(50)+coef,poinCarSx[-50:],s=.001)
+        x0 = sol[-1,:]
+        time+=totTime
 
     ax8.set_title("Bifurcation Diagram")
     ax8.set_ylabel("Position $x$")
     ax8.set_xlabel("Coefficient $j$")
-    fig8.savefig("trybib.pdf",dpi = 400)
+    fig8.savefig("trybif.pdf")
+    #fig8.savefig("trybib.pdf",dpi = 400)
     #pl.show()    
 
     # make text file with all extra information

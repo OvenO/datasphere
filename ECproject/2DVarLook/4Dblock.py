@@ -25,32 +25,48 @@ def main():
 
     dt = .005 
     # total number of iterations to perform
-    totIter = 100000
+    totIter = 2000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = .5
+    coef = 1.5
     k = 1.0
     w = 1.0
     damp = .1
     g = .13
 
-    numParamChecks = 100
+    numParamChecks = 300
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
-    # increase coeff by:
-    incCf = .1
     # make ec object
     elc = ec.electricCurtain()
     
-    # initial conditions
+    # define the lower left corner of block
     initvx = 0.0
     initvy = 0.0
-    initx = 1.5
-    inity = 1.8
+    initx = 0.0
+    inity = 0.0
+    # define dimensions of block
+    xby = 2.0*pl.pi
+    yby = 3.0
+    vxby = 10.0
+    vyby = 10.0
+    # define number of points in each direction
+    numx = 20
+    numy = 20
+    numvx = 20
+    numvy = 20
+    # distance between points
+    incx = xby/numx
+    incy = yby/numy
+    incvx = vxby/numvx
+    incvx = vxby/numvx
+    
+    
+
 
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
@@ -69,8 +85,7 @@ def main():
 
     # make text file with all extra information
     outFile = open("info.dat","w")
-    outFile.write("Info \n initial coefficient: " + str(coef) \
-            + "\nincreace in coefficient: " + str(incCf)\
+    outFile.write("Info \n coefficient: " + str(coef) \
             + "\nwave number: " +str(k)\
             + "\nomega: " + str(w)\
             + "\ndamping: " + str(damp)\
@@ -78,11 +93,23 @@ def main():
             + "\ntime step: " + str(dt)\
             + "\ntotal time: " + str(dt*totIter)\
             + "\ntotal iterations: " + str(totIter)\
-            + "\nInitial Conditions: \n" +
-            "initial x: " +str(initx) \
-            +"\ninitial y: " +str(inity) \
-            +"\ninitial vx: " +str(initvx)\
-            +"\ninitial vy: " +str(initvy) )
+            + "\n\nInitial Conditions Info: "\
+            + "\nLower left corner of block: " \
+            + "\nx: " +str(initx) \
+            + "\ny: " +str(inity) \
+            + "\nvx: " +str(initvx)\
+            + "\nvy: " +str(initvy) )\
+            + "\nDimensions of block:" \
+            + "\nxby: " + str(xby) \
+            + "\nyby: " + str(yby) \
+            + "\nvxby: " + str(vxby) \
+            + "\nvyby: " + str(vyby) \
+            + "\nNumber of points in respective directions:" \
+            + "\nnumx: " + str(numx) \
+            + "\nnumy: " + str(numy) \
+            + "\nnumvx: " + str(numvx) \
+            + "\nnumvy: " + str(numvy) \
+
     outFile.close()
 
     # make the files that will hold the data
