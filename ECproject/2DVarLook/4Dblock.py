@@ -55,10 +55,10 @@ def main():
     vxby = 10.0
     vyby = 10.0
     # define number of points in each direction
-    numx = 20
-    numy = 20
-    numvx = 20
-    numvy = 20
+    numx =  5
+    numy =  5
+    numvx = 5 
+    numvy = 5 
     # distance between points
     incx = xby/numx
     incy = yby/numy
@@ -117,70 +117,71 @@ def main():
     datfile.close()
     poinfile = open("poincar.txt","w")
     poinfile.close()
+    
+    for alpha in range(numx):
+        for beta in range(numy):
+            for kapa in range (numvx):
+                for gama in range(numvy):
+                    apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
 
+                    # itial conditions to next point
+                    x0 = pl.array([initvx+alpha*incvx,initvy+beta*incvy,initx+kapa*incx,inity+gama*incy])
 
+                    sol = odeint(apx.f,x0,time)
+                    
+                    for a in range(len(sol[:,0])):
+                        sol[a,2] = sol[a,2]%modNum
 
-    for j in range(numParamChecks):
-        apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
-        sol = odeint(apx.f,x0,time)
-        
-        for a in range(len(sol[:,0])):
-            sol[a,2] = sol[a,2]%modNum
+                    coef += incCf
+                    
+                    checkT = 0.0
+                    poinCarSx= pl.array([])
+                    poinCarSy= pl.array([])
+                    poinCarSxdot = pl.array([])
+                    poinCarSydot = pl.array([])
+                    intst = 1
+                    checkPoint = 0
+                    while (checkPoint < totIter):
+                    #    print(checkPoint)
+                        poinCarSx = pl.append(poinCarSx,sol[checkPoint,2])
+                        poinCarSxdot = pl.append(poinCarSxdot,sol[checkPoint,0])
+                        poinCarSy = pl.append(poinCarSy,sol[checkPoint,3])
+                        poinCarSydot = pl.append(poinCarSydot,sol[checkPoint,1])
+                        checkT = intst*2*pl.pi/(w*dt)
+                        # the +.5 efectivly rounds the number apropriatly
+                        checkPoint = int(checkT +.5)
+                        intst += 1
+                    
+                    shutil.copyfile("data.txt","temp.txt")
+                    readdat = open("temp.txt","r")
+                    writedat = open("data.txt","w")
+                    # this variarable (pstr) is only there to make the "lables" line more readable
+                    pstr = "p"+str(j)
+                    newlable = "%15s %15s %15s %15s"%(pstr+" vx",pstr+" vy",pstr+" x",pstr+" y")
 
-        coef += incCf
-        
-        checkT = 0.0
-        poinCarSx= pl.array([])
-        poinCarSy= pl.array([])
-        poinCarSxdot = pl.array([])
-        poinCarSydot = pl.array([])
-        intst = 1
-        checkPoint = 0
-        while (checkPoint < totIter):
-        #    print(checkPoint)
-            poinCarSx = pl.append(poinCarSx,sol[checkPoint,2])
-            poinCarSxdot = pl.append(poinCarSxdot,sol[checkPoint,0])
-            poinCarSy = pl.append(poinCarSy,sol[checkPoint,3])
-            poinCarSydot = pl.append(poinCarSydot,sol[checkPoint,1])
-            checkT = intst*2*pl.pi/(w*dt)
-            # the +.5 efectivly rounds the number apropriatly
-            checkPoint = int(checkT +.5)
-            intst += 1
-        
-        shutil.copyfile("data.txt","temp.txt")
-        readdat = open("temp.txt","r")
-        writedat = open("data.txt","w")
-        # this variarable (pstr) is only there to make the "lables" line more readable
-        pstr = "p"+str(j)
-        newlable = "%15s %15s %15s %15s"%(pstr+" vx",pstr+" vy",pstr+" x",pstr+" y")
+                    # if the folder is empty need to just write first line
+                    if alpha==beta==gama==kapa==0:
+                        writedat.write(newlable + "\n")
+                        for i in range(len(sol)):
+                            toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
+                            toadd += "\n"
+                            writedat.write(toadd)
+                    else:
+                        oldlable = readdat.readline()
+                        # pop off the "\n" so we can append the new lable
+                        oldlable = oldlable[:-1]
+                        # append the new lable and write it to the file
+                        writedat.write(oldlable + newlable + "\n")
+                        for i in range(len(sol)):
+                            toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
+                            curline = readdat.readline()
+                            curline = curline[:-1]
+                            newline = curline + toadd + "\n"
+                            writedat.write(newline)
 
-        # if the folder is empty need to just write first line
-        if j==0:
-            writedat.write(newlable + "\n")
-            for i in range(len(sol)):
-                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                toadd += "\n"
-                writedat.write(toadd)
-        else:
-            oldlable = readdat.readline()
-            # pop off the "\n" so we can append the new lable
-            oldlable = oldlable[:-1]
-            # append the new lable and write it to the file
-            writedat.write(oldlable + newlable + "\n")
-            for i in range(len(sol)):
-                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                curline = readdat.readline()
-                curline = curline[:-1]
-                newline = curline + toadd + "\n"
-                writedat.write(newline)
-
-        readdat.close()
-        writedat.close()
-        
-
-        # this is the feedback information to make the transitions smooth
-        x0 = sol[-1,:]
-        time+=totTime%2*pl.pi
+                    readdat.close()
+                    writedat.close()
+                    
 
     os.remove("temp.txt")
     os.chdir("..")
