@@ -25,12 +25,12 @@ def main():
 
     dt = .005 
     # total number of iterations to perform
-    totIter = 100000
+    totIter = 500000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = .5
+    coef = .8
     k = 1.0
     w = 1.0
     damp = .1
@@ -121,6 +121,7 @@ def main():
             intst += 1
         
         shutil.copyfile("data.txt","temp.txt")
+        # shutil.copyfile("poincar.txt","pointemp.txt")
         readdat = open("temp.txt","r")
         writedat = open("data.txt","w")
         # this variarable (pstr) is only there to make the "lables" line more readable
