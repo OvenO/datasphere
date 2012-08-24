@@ -25,7 +25,7 @@ def main():
 
     dt = .005 
     # total number of iterations to perform
-    totIter = 2000000
+    totIter = 100000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
