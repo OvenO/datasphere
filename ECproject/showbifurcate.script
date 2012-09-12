@@ -1,7 +1,7 @@
 # This job needs 1 compute node with 1 processor per node.
 #PBS -l nodes=1:ppn=1
 # It should be allowed to run for up to x hour.
-#PBS -l walltime=08:00:00
+#PBS -l walltime=20:00:00
 # Name of job.
 #PBS -N showbifEC
 # Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)

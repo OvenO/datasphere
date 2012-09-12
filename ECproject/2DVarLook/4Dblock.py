@@ -21,7 +21,7 @@ def main():
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
     # PC sections
-    os.chdir(os.path.expanduser("~/Data/EC/2DNormAllVar/VarCoef"))
+    os.chdir(os.path.expanduser("~/Data/EC/4DBlock"))
 
     dt = .005 
     # total number of iterations to perform
@@ -35,8 +35,6 @@ def main():
     w = 1.0
     damp = .1
     g = .13
-
-    numParamChecks = 300
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
@@ -55,15 +53,15 @@ def main():
     vxby = 10.0
     vyby = 10.0
     # define number of points in each direction
-    numx =  5
-    numy =  5
-    numvx = 5 
-    numvy = 5 
+    numx =  2
+    numy =  2
+    numvx = 2 
+    numvy = 2 
     # distance between points
     incx = xby/numx
     incy = yby/numy
     incvx = vxby/numvx
-    incvx = vxby/numvx
+    incvy = vyby/numvy
     
     
 
@@ -98,7 +96,7 @@ def main():
             + "\nx: " +str(initx) \
             + "\ny: " +str(inity) \
             + "\nvx: " +str(initvx)\
-            + "\nvy: " +str(initvy) )\
+            + "\nvy: " +str(initvy) \
             + "\nDimensions of block:" \
             + "\nxby: " + str(xby) \
             + "\nyby: " + str(yby) \
@@ -108,7 +106,7 @@ def main():
             + "\nnumx: " + str(numx) \
             + "\nnumy: " + str(numy) \
             + "\nnumvx: " + str(numvx) \
-            + "\nnumvy: " + str(numvy) \
+            + "\nnumvy: " + str(numvy) )
 
     outFile.close()
 
@@ -117,7 +115,13 @@ def main():
     datfile.close()
     poinfile = open("poincar.txt","w")
     poinfile.close()
+
+    # j will just keep track of how many times we run a particle. really jsut for the the labeling
+    # in the data files
+    j = 0
     
+    checkT = 2*pl.pi/w
+
     for alpha in range(numx):
         for beta in range(numy):
             for kapa in range (numvx):
@@ -132,46 +136,63 @@ def main():
                     for a in range(len(sol[:,0])):
                         sol[a,2] = sol[a,2]%modNum
 
-                    coef += incCf
-                    
-                    checkT = 0.0
-                    poinCarSx= pl.array([])
-                    poinCarSy= pl.array([])
-                    poinCarSxdot = pl.array([])
-                    poinCarSydot = pl.array([])
-                    intst = 1
+                    # define the time slice information
+                    checknextT = 0.0
                     checkPoint = 0
-                    while (checkPoint < totIter):
-                    #    print(checkPoint)
-                        poinCarSx = pl.append(poinCarSx,sol[checkPoint,2])
-                        poinCarSxdot = pl.append(poinCarSxdot,sol[checkPoint,0])
-                        poinCarSy = pl.append(poinCarSy,sol[checkPoint,3])
-                        poinCarSydot = pl.append(poinCarSydot,sol[checkPoint,1])
-                        checkT = intst*2*pl.pi/(w*dt)
-                        # the +.5 efectivly rounds the number apropriatly
-                        checkPoint = int(checkT +.5)
-                        intst += 1
-                    
+
+                    # coppy the data file to temp and read from the temp in order to rewrite the
+                    # data file. "juggeling to avoid having to store huge arrays.
                     shutil.copyfile("data.txt","temp.txt")
                     readdat = open("temp.txt","r")
                     writedat = open("data.txt","w")
+
+                    # do the same stuff for the poincare data
+                    shutil.copyfile("poincar.txt","pointemp.txt")
+                    readpoin = open("pointemp.txt","r")
+                    writepoin = open("poincar.txt","w")
                     # this variarable (pstr) is only there to make the "lables" line more readable
                     pstr = "p"+str(j)
-                    newlable = "%15s %15s %15s %15s"%(pstr+" vx",pstr+" vy",pstr+" x",pstr+" y")
+                    newlable = "%15s %15s %15s %15s"%(pstr+"_vx",pstr+"_vy",pstr+"_x",pstr+"_y")
+
+                    # for the poincare section data we will just change the lable by adding a "TS"
+                    # at the begining denoting "Time Slice"
+                    newpoinlable = "%15s %15s %15s %15s"%("TS"+pstr+"_vx","TS"+pstr+"_vy","TS"+pstr+"_x","TS"+pstr+"_y")
 
                     # if the folder is empty need to just write first line
                     if alpha==beta==gama==kapa==0:
                         writedat.write(newlable + "\n")
+                        writepoin.write(newpoinlable + "\n")
                         for i in range(len(sol)):
+                            # add the first particles solution to the data file
                             toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
                             toadd += "\n"
                             writedat.write(toadd)
+
+                            # this if statment cecks to see if we are at the right point to grab the
+                            # timesliced data from the soulution. checkPoint is just the integer
+                            # amount of "time" of a driving cycle or whatever
+                            if i==checkPoint:
+                                # add first poincare section to poincare data file
+                                writepoin.write(toadd)
+
+                                # For aditional coments (and outrage) please see 2Dvarlookcoef.py
+                                # coments. (purpose -> stop propigation error)
+                                checknextT += checkT
+
+                                # the +.5 efectivly rounds the number apropriatly
+                                checkPoint = int(checknextT/dt +.5)
                     else:
                         oldlable = readdat.readline()
                         # pop off the "\n" so we can append the new lable
                         oldlable = oldlable[:-1]
                         # append the new lable and write it to the file
                         writedat.write(oldlable + newlable + "\n")
+
+                        # same as above just poincare data
+                        oldpoinlable = readpoin.readline()
+                        oldpoinlable = oldpoinlable[:-1]
+                        writepoin.write(oldpoinlable + newpoinlable + "\n")
+
                         for i in range(len(sol)):
                             toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
                             curline = readdat.readline()
@@ -179,8 +200,28 @@ def main():
                             newline = curline + toadd + "\n"
                             writedat.write(newline)
 
+                            if i==checkPoint:
+
+                                writepoin.write(newline)
+
+                                # For aditional coments (and outrage) please see 2Dvarlookcoef.py
+                                # coments. (purpose -> stop propigation error)
+                                checknextT += checkT
+
+                                # the +.5 efectivly rounds the number apropriatly
+                                checkPoint = int(checknextT/dt +.5)
+
+                    
+                    # close the data file
                     readdat.close()
                     writedat.close()
+
+                    # close the poincare file
+                    readpoin.close()
+                    writepoin.close()
+
+                    # increase the number of particles we have run
+                    j += 1
                     
 
     os.remove("temp.txt")

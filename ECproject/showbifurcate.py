@@ -69,7 +69,7 @@ def main():
 
         ax8.scatter(pl.zeros(50)+coef,poinCarSx[-50:],s=.001)
         x0 = sol[-1,:]
-        time+=totTime
+        time+=totTime%2*pl.pi
 
     ax8.set_title("Bifurcation Diagram")
     ax8.set_ylabel("Position $x$")
