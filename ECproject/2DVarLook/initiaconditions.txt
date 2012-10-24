@@ -1,0 +1,67 @@
+******************************************************************************************************************
+These parameters are ones where interesting fetures are found
+******************************************************************************************************************
+
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+These are the parameters that give you a stable oscilating curved path. The
+simpelest one posible and when you change the driving coeff by just a little
+(.000005) it shifts to a new locations.
+
+    # YAY ARGPARSE
+    parser = argparse.ArgumentParser()
+    # this is what we want g to be
+    parser.add_argument("-g",action="store",dest="g",type=float,default=.1) 
+    # the damping coefficient...
+    parser.add_argument("-b",action="store",dest="b",type=float,default=.1)
+    # starting coefficient...
+    parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
+    # number of parameter checks...
+    parser.add_argument("-n",action="store",dest="n",type=int,default=6)
+    # increase in coefficent per param check...
+    parser.add_argument("-i",action="store",dest="i",type=float,default= .000005)
+    # pass in directory name also :/
+    timestring = thetime.asctime()
+    newtimestr = ""
+    for l,m in enumerate(timestring.split()):
+        newtimestr += m + "_"
+    newtimestr = newtimestr.replace(":","")
+    parser.add_argument("-d",action="store",dest="d",type=str,default=newtimestr)
+
+    inargs = parser.parse_args()
+
+    dt = .025 
+    # total number of iterations to perform
+    totIter = 20008
+    totTime = totIter*dt
+    time = pl.arange(0.0,totTime,dt)
+    
+    surf = 1.0
+    coef = inargs.c
+    k = 1.0
+    w = 2.0
+    damp = inargs.b
+    g = inargs.g
+
+    numParamChecks = inargs.n
+
+    # how many cells is till periodicity use x = n*pi/k (n must be even #)
+    modNum = 2*pl.pi/k
+    
+    # increase coeff by:
+    incCf = inargs.i
+    # make ec object
+    elc = ec.electricCurtain()
+    
+    # initial conditions
+    initvx = 0.0
+    initvy = 0.0
+    initx = 1.5
+    inity = 2.2
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+
+
+

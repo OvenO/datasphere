@@ -10,81 +10,80 @@ import pylab as pl
 import os
 from scipy.integrate import odeint
 import shutil
+import argparse
 import time as thetime
 #import gc
 #import weakref
 
 def main():
-
-    # gc.set_debug(gc.DEBUG_LEAK)
-    # NEED TO HAVE EMPTY DIRECTORY "Data0"
     
-    # before anything get us into the NormAll directory. this is the directory that will hold the
-    # directories with the different data sets. We need to start keeping track of phase diagrams and
-    # PC sections
-    os.chdir(os.path.expanduser("~/Data/EC/4DBlock"))
+    
+    # YAY ARGPARSE
+    parser = argparse.ArgumentParser()
+    # this is what we want g to be
+    parser.add_argument("-g",action="store",dest="g",type=float,default=.1) 
+    # the damping coefficient...
+    parser.add_argument("-b",action="store",dest="b",type=float,default=.1)
+    # starting coefficient...
+    parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
+    # number of parameter checks...
+    parser.add_argument("-n",action="store",dest="n",type=int,default=6)
+    # increase in coefficent per step in bifurcation.
+    parser.add_argument("-i",action="store",dest="i",type=float,default= .000005)
+    # pass in directory name also :/
+    timestring = thetime.asctime()
+    newtimestr = ""
+    for l,m in enumerate(timestring.split()):
+        newtimestr += m + "_"
+    newtimestr = newtimestr.replace(":","")
+    parser.add_argument("-d",action="store",dest="d",type=str,default=newtimestr)
 
-    dt = .025 
+    inargs = parser.parse_args()
+
+    dt = .05 
     # total number of iterations to perform
-    totIter = 10000
+    totIter = 20008
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = 5.0
+    coef = inargs.c
     k = 1.0
     w = 2.0
-    damp = .1
-    g = .1
+    damp = inargs.b
+    g = inargs.g
 
-   # how many cells is till periodicity use x = n*pi/k (n must be even #)
+
+    numParamChecks = inargs.n
+
+    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
+    # increase coeff by:
+    incCf = inargs.i
     # make ec object
     elc = ec.electricCurtain()
     
-    # define the lower left corner of block
+    # initial conditions
     initvx = 0.0
     initvy = 0.0
-    initx = 0.0
-    inity = 0.0
-    # define dimensions of block
-    xby = 2.0*pl.pi
-    yby = 3.0
-    vxby = 10.0
-    vyby = 10.0
-    # define number of points in each direction
-    numx =  2
-    numy =  2
-    numvx = 2 
-    numvy = 2 
-    # distance between points
-    incx = xby/numx
-    incy = yby/numy
-    incvx = vxby/numvx
-    incvy = vyby/numvy
-    
+    initx = 1.5
+    inity = 2.2
+
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
     x0 = pl.array([initvx,initvy,initx,inity])
 
-
-
-    # use time to name directories
-    timestr = thetime.asctime()
-    newtimestr = "Block_"
-    for a,b in enumerate(timestr.split()):
-        newtimestr+=b+"_"
-
-    newtimestr = newtimestr.replace(":","") 
-
-    os.mkdir(newtimestr)
-    os.chdir(newtimestr)
-
+    # NEW DATA FILE MANAGMENT SYSTEM
+    # Date and time... thats all for now
+    curtime = inargs.d
+    os.mkdir(curtime)
+    os.chdir(curtime)
 
     # make text file with all extra information
-    outFile = open("info.dat","w")
-    outFile.write("Info \n coefficient: " + str(coef) \
+    outFile = open("info.txt","w")
+    outFile.write("Info \n initial coefficient: " + str(coef) \
+            + "\nincreace in coefficient: " + str(incCf)\
             + "\nwave number: " +str(k)\
             + "\nomega: " + str(w)\
             + "\ndamping: " + str(damp)\
@@ -92,23 +91,11 @@ def main():
             + "\ntime step: " + str(dt)\
             + "\ntotal time: " + str(dt*totIter)\
             + "\ntotal iterations: " + str(totIter)\
-            + "\n\nInitial Conditions Info: "\
-            + "\nLower left corner of block: " \
-            + "\nx: " +str(initx) \
-            + "\ny: " +str(inity) \
-            + "\nvx: " +str(initvx)\
-            + "\nvy: " +str(initvy) \
-            + "\nDimensions of block:" \
-            + "\nxby: " + str(xby) \
-            + "\nyby: " + str(yby) \
-            + "\nvxby: " + str(vxby) \
-            + "\nvyby: " + str(vyby) \
-            + "\nNumber of points in respective directions:" \
-            + "\nnumx: " + str(numx) \
-            + "\nnumy: " + str(numy) \
-            + "\nnumvx: " + str(numvx) \
-            + "\nnumvy: " + str(numvy) )
-
+            + "\nInitial Conditions: \n" +
+            "initial x: " +str(initx) \
+            +"\ninitial y: " +str(inity) \
+            +"\ninitial vx: " +str(initvx)\
+            +"\ninitial vy: " +str(initvy) )
     outFile.close()
 
     # make the files that will hold the data
@@ -117,115 +104,101 @@ def main():
     poinfile = open("poincar.txt","w")
     poinfile.close()
 
-    # j will just keep track of how many times we run a particle. really jsut for the the labeling
-    # in the data files
-    j = 0
-    
+
     checkT = 2*pl.pi/w
 
-    for alpha in range(numx):
-        for beta in range(numy):
-            for kapa in range (numvx):
-                for gama in range(numvy):
-                    apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
+    for j in range(numParamChecks):
+        apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
+        sol = odeint(apx.f,x0,time)
+        
+        for a in range(len(sol[:,0])):
+            sol[a,2] = sol[a,2]%modNum
 
-                    # itial conditions to next point
-                    x0 = pl.array([initvx+alpha*incvx,initvy+beta*incvy,initx+kapa*incx,inity+gama*incy])
+        coef += incCf
 
-                    sol = odeint(apx.f,x0,time)
-                    
-                    for a in range(len(sol[:,0])):
-                        sol[a,2] = sol[a,2]%modNum
+        checknextT = 0.0
+        checkPoint = 0
+        
 
-                    # define the time slice information
-                    checknextT = 0.0
-                    checkPoint = 0
+        shutil.copyfile("data.txt","temp.txt")
+        readdat = open("temp.txt","r")
+        writedat = open("data.txt","w")
+    
+        # do the same stuff for the poincare data
+        shutil.copyfile("poincar.txt","pointemp.txt")
+        readpoin= open("pointemp.txt","r")
+        writepoin = open("poincar.txt","w")
+        # this variarable (pstr) is only there to make the "lables" line more readable
+        pstr = "p"+str(j)
+        newlable = "%15s %15s %15s %15s"%(pstr+"_vx",pstr+"_vy",pstr+"_x",pstr+"_y")
 
-                    # coppy the data file to temp and read from the temp in order to rewrite the
-                    # data file. "juggeling to avoid having to store huge arrays.
-                    shutil.copyfile("data.txt","temp.txt")
-                    readdat = open("temp.txt","r")
-                    writedat = open("data.txt","w")
+        # for the poincare section data we will just change the lable by adding a "TS" at the
+        # begining detoting "Time Slice"
+        newpoinlable = "%15s %15s %15s %15s"%("TS"+pstr+"_vx","TS"+pstr+"_vy","TS"+pstr+"_x","TS"+pstr+"_y")
 
-                    # do the same stuff for the poincare data
-                    shutil.copyfile("poincar.txt","pointemp.txt")
-                    readpoin = open("pointemp.txt","r")
-                    writepoin = open("poincar.txt","w")
-                    # this variarable (pstr) is only there to make the "lables" line more readable
-                    pstr = "p"+str(j)
-                    newlable = "%15s %15s %15s %15s"%(pstr+"_vx",pstr+"_vy",pstr+"_x",pstr+"_y")
+        # if the folder is empty need to just write first line
+        if j==0:
+            writedat.write(newlable + "\n")
+            writepoin.write(newpoinlable + "\n")
+            for i in range(len(sol)):
+                # add the first particles solution to the data file
+                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
+                toadd += "\n"
+                writedat.write(toadd)
+                
+                # this if statements cecks to see if we are at the right point to grab the
+                # timesliced data from the solution. 
+                # IN ORDER TO AVOID PROPAGATING ERROR THAT IS F-ING UP THE POINCARE SECTIONS WE NEED
+                # TO CALCULATE "checkPoint" EVERYTIME USING THE FLOATS.
+                # GOD DAMN IT OWEN
+                if i==checkPoint:
+                    # add first poincare section to poincare data file
+                    writepoin.write(toadd)
 
-                    # for the poincare section data we will just change the lable by adding a "TS"
-                    # at the begining denoting "Time Slice"
-                    newpoinlable = "%15s %15s %15s %15s"%("TS"+pstr+"_vx","TS"+pstr+"_vy","TS"+pstr+"_x","TS"+pstr+"_y")
+                    checknextT += checkT
+                    # the +.5 efectivly rounds the number apropriatly
+                    checkPoint = int(checknextT/dt+.5)
+        else:
+            oldlable = readdat.readline()
+            # pop off the "\n" so we can append the new lable
+            oldlable = oldlable[:-1]
+            # append the new lable and write it to the file
+            writedat.write(oldlable + newlable + "\n")
+            
+            # same as above just poincare data
+            oldpoinlable = readpoin.readline()
+            oldpoinlable = oldpoinlable[:-1]
+            writepoin.write(oldpoinlable + newpoinlable + "\n")
 
-                    # if the folder is empty need to just write first line
-                    if alpha==beta==gama==kapa==0:
-                        writedat.write(newlable + "\n")
-                        writepoin.write(newpoinlable + "\n")
-                        for i in range(len(sol)):
-                            # add the first particles solution to the data file
-                            toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                            toadd += "\n"
-                            writedat.write(toadd)
+            for i in range(len(sol)):
+                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
+                curline = readdat.readline()
+                curline = curline[:-1]
+                newline = curline + toadd + "\n"
+                writedat.write(newline)
 
-                            # this if statment cecks to see if we are at the right point to grab the
-                            # timesliced data from the soulution. checkPoint is just the integer
-                            # amount of "time" of a driving cycle or whatever
-                            if i==checkPoint:
-                                # add first poincare section to poincare data file
-                                writepoin.write(toadd)
+                if i==checkPoint:
+                    writepoin.write(newline) 
 
-                                # For aditional coments (and outrage) please see 2Dvarlookcoef.py
-                                # coments. (purpose -> stop propigation error)
-                                checknextT += checkT
+                    checknextT += checkT
+                    # the +.5 efectivly rounds the number apropriatly
+                    checkPoint = int(checknextT/dt+.5)
+                     
+        # close the data file
+        readdat.close()
+        writedat.close()
+        
+        # close the poincare file
+        readpoin.close()
+        writepoin.close()
 
-                                # the +.5 efectivly rounds the number apropriatly
-                                checkPoint = int(checknextT/dt +.5)
-                    else:
-                        oldlable = readdat.readline()
-                        # pop off the "\n" so we can append the new lable
-                        oldlable = oldlable[:-1]
-                        # append the new lable and write it to the file
-                        writedat.write(oldlable + newlable + "\n")
 
-                        # same as above just poincare data
-                        oldpoinlable = readpoin.readline()
-                        oldpoinlable = oldpoinlable[:-1]
-                        writepoin.write(oldpoinlable + newpoinlable + "\n")
-
-                        for i in range(len(sol)):
-                            toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                            curline = readdat.readline()
-                            curline = curline[:-1]
-                            newline = curline + toadd + "\n"
-                            writedat.write(newline)
-
-                            if i==checkPoint:
-
-                                writepoin.write(newline)
-
-                                # For aditional coments (and outrage) please see 2Dvarlookcoef.py
-                                # coments. (purpose -> stop propigation error)
-                                checknextT += checkT
-
-                                # the +.5 efectivly rounds the number apropriatly
-                                checkPoint = int(checknextT/dt +.5)
-
-                    
-                    # close the data file
-                    readdat.close()
-                    writedat.close()
-
-                    # close the poincare file
-                    readpoin.close()
-                    writepoin.close()
-
-                    # increase the number of particles we have run
-                    j += 1
-                    
+        # this is the feedback information to make the transitions smooth
+        x0 = sol[-1,:]
+        time+=(totTime%2*pl.pi)/w
 
     os.remove("temp.txt")
+    os.remove("pointemp.txt")
     os.chdir("..")
 
         #print("last phase space info for feedback \nin form: [xdot,ydot,x,y]")
@@ -388,63 +361,6 @@ def main():
         #print(weakref.getweakrefcount(time))
         #print(weakref.getweakrefcount(fig1))
         #print(weakref.getweakrefcount(ax1))
-
-        # try to garbage collect by using the gc module
-
-        # try to garbage colect (manualy) some of the matplotlib objects inorder to fix the memory
-        # error
-        #del fig1
-        #del fig13
-        #del fig3
-        #del fig12
-        #del fig14
-        #del fig4
-        #del fig11
-        #del fig7
-        #del fig8
-
-        #del ax1
-        #del ax13
-        #del ax3
-        #del ax12
-        #del ax14
-        #del ax4
-        #del ax11
-        #del ax7
-        #del ax8
-
-        #del sol
-        #del poinCarSx
-        #del poinCarSxdot
-        #del poinCarSy
-
-
-        #fig1 = None
-        #fig13 = None
-        #fig3 = None
-        #fig12 = None
-        #fig14 = None
-        #fig4 = None
-        #fig11 = None
-        #fig7 = None
-        #fig8 = None
-
-        #ax1 = None
-        #ax13 = None
-        #ax3 = None
-        #ax12 = None
-        #ax14 = None
-        #ax4 = None
-        #ax11 = None
-        #ax7 = None
-        #ax8 = None
-
-        #del sol
-        #del poinCarSx
-        #del poinCarSxdot
-        #del poinCarSy
-        #del poinCarSydot
-       #del poinCarSydot
 
 
     

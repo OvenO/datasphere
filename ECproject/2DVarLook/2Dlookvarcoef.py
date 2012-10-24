@@ -33,7 +33,7 @@ def main():
     # starting coefficient...
     parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
     # number of parameter checks...
-    parser.add_argument("-n",action="store",dest="n",type=int,default=5)
+    parser.add_argument("-n",action="store",dest="n",type=int,default=6)
     # increase in coefficent per param check...
     parser.add_argument("-i",action="store",dest="i",type=float,default= .000005)
     # pass in directory name also :/
@@ -41,13 +41,14 @@ def main():
     newtimestr = ""
     for l,m in enumerate(timestring.split()):
         newtimestr += m + "_"
+    newtimestr = newtimestr.replace(":","")
     parser.add_argument("-d",action="store",dest="d",type=str,default=newtimestr)
 
     inargs = parser.parse_args()
 
-    dt = .05 
+    dt = .025 
     # total number of iterations to perform
-    totIter = 10008
+    totIter = 20008
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -77,17 +78,6 @@ def main():
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
     x0 = pl.array([initvx,initvy,initx,inity])
-
-    ## lets name all the new folders just Data#/ 
-    ## don't want to write over any folder so check and see what number we are already on
-    #allDir = os.listdir(".")
-    #numdir = 0
-    #for l,z in enumerate(allDir):
-    #    numdir = l        
-    #numdir += 1
-    #
-    #os.mkdir("Data" + str(numdir))
-    #os.chdir("Data" + str(numdir))
 
     # NEW DATA FILE MANAGMENT SYSTEM
     # Date and time... thats all for now
@@ -212,7 +202,7 @@ def main():
 
         # this is the feedback information to make the transitions smooth
         x0 = sol[-1,:]
-        time+=totTime%2*pl.pi
+        time+=(totTime%2*pl.pi)/w
 
     os.remove("temp.txt")
     os.remove("pointemp.txt")
