@@ -24,7 +24,7 @@ def main():
 
     dt = .05 
     # total number of iterations to perform
-    totIter = 500
+    totIter = 600
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -32,7 +32,7 @@ def main():
     coef = 5.0
     k = 1.0
     w = 2.0
-    damp = .07
+    damp = .1
     g = .1
 
     # how many cells is till periodicity use x = n*pi/k (n must be even #)
@@ -48,24 +48,22 @@ def main():
     inity = 0.0
 
     # define dimensions of block
-    xby = 2.0*pl.pi
-    yby = 10.0
+    xby = 1.0*pl.pi
+    yby = 6.0
     vxby = 0.0
     vyby = 0.0
 
     # define number of points in each direction
-    numx =  100.0
-    numy =  100.0
-    numvx = 0.0
-    numvy = 0.0
+    numx =  50.0
+    numy =  50.0
+    numvx = 1.0
+    numvy = 1.0
 
     # distance between points
     incx = xby/numx
     incy = yby/numy
-    incvx = 0.0 
-    incvy = 0.0 
-    #incvx = vxby/numvx
-    #incvy = vyby/numvy
+    incvx = vxby/numvx
+    incvy = vyby/numvy
 
     # because we don't need the WHOLE solution to watch what happens and the block goes forward in
     # time lets define a variable that determines how many points we skip before we keep one.
@@ -128,10 +126,10 @@ def main():
 
     filearr = pl.array([])
 
-    for alpha in range(int(numx)):
-        for beta in range(int(numy)):
-            for kapa in range (int(numvx)):
-                for gama in range(int(numvy)):
+    for kapa in range (int(numvx)):
+        for gama in range(int(numvy)):
+            for alpha in range(int(numx)):
+                for beta in range(int(numy)):
 
                     # make a file for the curent particles solution
                     curpstr =  str(alpha)+str(beta)+str(kapa)+str(gama)
@@ -141,17 +139,15 @@ def main():
                     
                     curpdatfile = open(curpstr,"a")
                     
-
                     apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
 
                     # itial conditions to next point
-                    x0 = pl.array([initvx+alpha*incvx,initvy+beta*incvy,initx+kapa*incx,inity+gama*incy])
+                    x0 = pl.array([initvx+kapa*incvx,initvy+gama*incvy,initx+alpha*incx,inity+beta*incy])
 
                     sol = odeint(apx.f,x0,time)
                     
                     for a in range(len(sol[:,0])):
                         sol[a,2] = sol[a,2]%modNum
-
 
                     for i in range(len(sol)):
                         # add the first particles solution to the data file
@@ -161,7 +157,6 @@ def main():
 
 
                     curpdatfile.close()
-
     
     for i in range(int(totIter/skip)-totIter%skip):
         # DATAPACKING=POINT should mean that the format is as such:
@@ -183,8 +178,7 @@ def main():
 
     datfile.close()
         
-    for apple,bannana in enumerate(filearr):
-        os.remove(bannana)
+    os.system("rm 1* 2* 3* 4* 5* 6* 7* 8* 9* 0*")
         
     os.chdir("..")
 

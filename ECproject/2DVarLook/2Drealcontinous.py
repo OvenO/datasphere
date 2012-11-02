@@ -16,7 +16,13 @@ import time as thetime
 #import weakref
 
 def main():
+    # gc.set_debug(gc.DEBUG_LEAK)
+    # NEED TO HAVE EMPTY DIRECTORY "Data0"
     
+    # before anything get us into the NormAll directory. this is the directory that will hold the
+    # directories with the different data sets. We need to start keeping track of phase diagrams and
+    # PC sections
+    os.chdir(os.path.expanduser("~/Data/EC/2DNormAllVar/VarCoef"))
     
     # YAY ARGPARSE
     parser = argparse.ArgumentParser()
@@ -28,7 +34,7 @@ def main():
     parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
     # number of parameter checks...
     parser.add_argument("-n",action="store",dest="n",type=int,default=6)
-    # increase in coefficent per step in bifurcation.
+    # increase in coefficent per param check...
     parser.add_argument("-i",action="store",dest="i",type=float,default= .000005)
     # pass in directory name also :/
     timestring = thetime.asctime()
@@ -40,9 +46,9 @@ def main():
 
     inargs = parser.parse_args()
 
-    dt = .05 
+    dt = .025 
     # total number of iterations to perform
-    totIter = 20008
+    totIter = 4038
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -52,7 +58,6 @@ def main():
     w = 2.0
     damp = inargs.b
     g = inargs.g
-
 
     numParamChecks = inargs.n
 
@@ -100,9 +105,6 @@ def main():
 
     # make the files that will hold the data
     datfile = open("data.txt","w")
-    datfile.close()
-    poinfile = open("poincar.txt","w")
-    poinfile.close()
 
 
     checkT = 2*pl.pi/w
@@ -114,91 +116,18 @@ def main():
         for a in range(len(sol[:,0])):
             sol[a,2] = sol[a,2]%modNum
 
+
+        for b in range(len(sol[:,0])):
+            toadd = "%15.6f %15.6f" %(sol[b,2],sol[b,3])
+            datfile.write(toadd+"\n")
+
         coef += incCf
-
-        checknextT = 0.0
-        checkPoint = 0
-        
-
-        shutil.copyfile("data.txt","temp.txt")
-        readdat = open("temp.txt","r")
-        writedat = open("data.txt","w")
-    
-        # do the same stuff for the poincare data
-        shutil.copyfile("poincar.txt","pointemp.txt")
-        readpoin= open("pointemp.txt","r")
-        writepoin = open("poincar.txt","w")
-        # this variarable (pstr) is only there to make the "lables" line more readable
-        pstr = "p"+str(j)
-        newlable = "%15s %15s %15s %15s"%(pstr+"_vx",pstr+"_vy",pstr+"_x",pstr+"_y")
-
-        # for the poincare section data we will just change the lable by adding a "TS" at the
-        # begining detoting "Time Slice"
-        newpoinlable = "%15s %15s %15s %15s"%("TS"+pstr+"_vx","TS"+pstr+"_vy","TS"+pstr+"_x","TS"+pstr+"_y")
-
-        # if the folder is empty need to just write first line
-        if j==0:
-            writedat.write(newlable + "\n")
-            writepoin.write(newpoinlable + "\n")
-            for i in range(len(sol)):
-                # add the first particles solution to the data file
-                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                toadd += "\n"
-                writedat.write(toadd)
-                
-                # this if statements cecks to see if we are at the right point to grab the
-                # timesliced data from the solution. 
-                # IN ORDER TO AVOID PROPAGATING ERROR THAT IS F-ING UP THE POINCARE SECTIONS WE NEED
-                # TO CALCULATE "checkPoint" EVERYTIME USING THE FLOATS.
-                # GOD DAMN IT OWEN
-                if i==checkPoint:
-                    # add first poincare section to poincare data file
-                    writepoin.write(toadd)
-
-                    checknextT += checkT
-                    # the +.5 efectivly rounds the number apropriatly
-                    checkPoint = int(checknextT/dt+.5)
-        else:
-            oldlable = readdat.readline()
-            # pop off the "\n" so we can append the new lable
-            oldlable = oldlable[:-1]
-            # append the new lable and write it to the file
-            writedat.write(oldlable + newlable + "\n")
-            
-            # same as above just poincare data
-            oldpoinlable = readpoin.readline()
-            oldpoinlable = oldpoinlable[:-1]
-            writepoin.write(oldpoinlable + newpoinlable + "\n")
-
-            for i in range(len(sol)):
-                toadd = "%15.6f %15.6f %15.6f %15.6f"%(sol[i,0],sol[i,1],sol[i,2],sol[i,3])
-                curline = readdat.readline()
-                curline = curline[:-1]
-                newline = curline + toadd + "\n"
-                writedat.write(newline)
-
-                if i==checkPoint:
-                    writepoin.write(newline) 
-
-                    checknextT += checkT
-                    # the +.5 efectivly rounds the number apropriatly
-                    checkPoint = int(checknextT/dt+.5)
-                     
-        # close the data file
-        readdat.close()
-        writedat.close()
-        
-        # close the poincare file
-        readpoin.close()
-        writepoin.close()
-
 
         # this is the feedback information to make the transitions smooth
         x0 = sol[-1,:]
-        time+=(totTime%2*pl.pi)/w
+        time+=totTime%(2*pl.pi/w)
 
-    os.remove("temp.txt")
-    os.remove("pointemp.txt")
+
     os.chdir("..")
 
         #print("last phase space info for feedback \nin form: [xdot,ydot,x,y]")

@@ -33,9 +33,9 @@ def main():
     # starting coefficient...
     parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
     # number of parameter checks...
-    parser.add_argument("-n",action="store",dest="n",type=int,default=6)
+    parser.add_argument("-n",action="store",dest="n",type=int,default=30)
     # increase in coefficent per param check...
-    parser.add_argument("-i",action="store",dest="i",type=float,default= .000005)
+    parser.add_argument("-i",action="store",dest="i",type=float,default= -.2)
     # pass in directory name also :/
     timestring = thetime.asctime()
     newtimestr = ""
@@ -48,7 +48,7 @@ def main():
 
     dt = .025 
     # total number of iterations to perform
-    totIter = 20008
+    totIter = 5018
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -202,7 +202,7 @@ def main():
 
         # this is the feedback information to make the transitions smooth
         x0 = sol[-1,:]
-        time+=(totTime%2*pl.pi)/w
+        time+=totTime%(2*pl.pi/w)
 
     os.remove("temp.txt")
     os.remove("pointemp.txt")
