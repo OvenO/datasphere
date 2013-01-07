@@ -1,9 +1,9 @@
 Info 
- coefficient: 1.7
+ coefficient: 0.71
 wave number: 1.0
 omega: 1.0
 damping: 0.1
-time step: 0.005
-total time: 5000.0
-total iterations: 1000000
-Initial conditions: [-1.55012466  0.          3.97045931  1.        ]
+time step: 0.05
+total time: 500.0
+total iterations: 10000
+Initial conditions: [-1.22924927  0.          4.10687157  1.        ]

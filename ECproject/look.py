@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
 from scipy.integrate import odeint
-import scipy as pl
+import pylab as pl
 
 def main():
     # NEED TO HAVE EMPTY DIRECTORY "Data0"
@@ -21,36 +21,34 @@ def main():
     numdir = 0
     for l,z in enumerate(allDir):
         numdir = l        
-    numdir += 1
-    
-    os.mkdir("Data" + str(numdir))
-    os.chdir("Data" + str(numdir))
-
 
     bifurcate = False
 
-    dt = .005 
+    dt = .05 
     # total number of iterations to perform
-    totIter = 1000000
+    totIter = 10000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
 
-    coef = 0.205
+    coef = 0.221
     k = 1.0
+    # NEVER CHANGE FROM 1 !!! will change time modulus for feedback info
     w = 1.0
     damp = .1
 
-    numParamChecks = 1
+    numParamChecks = 20
 
-   # how many cells is till periodicity use x = n*pi/k (n must be even #)
+    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
     # increase coeff by:
-    incCf = .0001
+    incCf = .001
     # make ec object
     elc = ec.electricCurtain()
     
 
+    x0 = pl.array([0.0,0.0,3.5,1.0])
+    checkPoint = 0
 
     # here is the bifurcation diagram (i hope)
     if (bifurcate):
@@ -58,18 +56,21 @@ def main():
         ax8 = fig8.add_subplot(111)
 
     for j in range(numParamChecks):
+        numdir += 1
+        os.mkdir("Data" + str(numdir))
+        os.chdir("Data" + str(numdir))
+
         print(j)
         
         # initial conditions vector
         # set up: [xdot,ydot,x,y]
-        x0 = pl.array([0.0,0.0,2.5,1.0])
         coef += incCf
         apx = ec.surfCentreLineApx(coef,k,w,damp)
         sol = odeint(apx.f,x0,time)
         for a in range(len(sol[:,0])):
             sol[a,2] = sol[a,2]%modNum
 
-        
+        newstart = checkPoint%totIter    
         checkT = 0.0
         poinCarSx= pl.array([])
         poinCarSxdot = pl.array([])
@@ -79,7 +80,7 @@ def main():
         #    print(checkPoint)
             poinCarSx = pl.append(poinCarSx,sol[checkPoint,2])
             poinCarSxdot = pl.append(poinCarSxdot,sol[checkPoint,0])
-            checkT = intst*2*pl.pi/(w*dt)
+            checkT = intst*2*pl.pi/(w*dt) + newstart
             # the +.5 efectivly rounds the number apropriatly
             checkPoint = int(checkT +.5)
             intst += 1
@@ -118,16 +119,16 @@ def main():
 #        ax3.set_ylabel("Velocity $x$")
 #        fig3.savefig("phaseSpace.png")
 #
-#        fig4 = pl.figure()
-#        ax4 = fig4.add_subplot(111)
-#        # just plot the last 10,000 pts
-#        ax4.plot(pl.arange(0,dt*10000,dt),sol[(totIter-10000):,2],label="Last Part $x(t)$")
-#        ax4.scatter([0.0,0.0,0.0],[0.0,pl.pi,2*pl.pi],color = "Red", marker="o",label="Electrodes")
-#        ax4.set_title("Position of Time")
-#        ax4.legend(loc = "best")
-#        ax4.set_xlabel("$x$")
-#        ax4.set_ylabel("$\omega t$")
-#        fig4.savefig("xoft.png")
+        fig4 = pl.figure()
+        ax4 = fig4.add_subplot(111)
+        # just plot the last 10,000 pts
+        ax4.plot(pl.arange(0,dt*10000,dt),sol[(totIter-10000):,2],label="Last Part $x(t)$")
+        ax4.scatter([0.0,0.0,0.0],[0.0,pl.pi,2*pl.pi],color = "Red", marker="o",label="Electrodes")
+        ax4.set_title("Position of Time")
+        ax4.legend(loc = "best")
+        ax4.set_ylabel("$x$")
+        ax4.set_xlabel("$t'$")
+        fig4.savefig("xoft.png")
 #
 #        # lets make a couple of more figures that are just the last 2000 pts
 #        fig5 = pl.figure()
@@ -141,16 +142,16 @@ def main():
 #        ax5.set_ylabel("Velocity $x$")
 #        fig5.savefig("restrictPhaseSpace.png")
 #
-#        fig6 = pl.figure()
-#        ax6 = fig6.add_subplot(111)
-#        # just plot the last 2,000 pts
-#        ax6.plot(pl.arange(0,dt*2000,dt),sol[(totIter-2000):,2],label="Last Part $x(t)$")
-#        ax6.scatter([0.0,0.0,0.0],[0.0,pl.pi,2*pl.pi],color = "Red", marker="o",label="Electrodes")
-#        ax6.set_title("Position of Time")
-#        ax6.legend(loc = "best")
-#        ax6.set_xlabel("$x$")
-#        ax6.set_ylabel("$\omega$ $t$")
-#        fig6.savefig("restrictxoft.png")
+        fig6 = pl.figure()
+        ax6 = fig6.add_subplot(111)
+        # just plot the last 2,000 pts
+        ax6.plot(pl.arange(0,dt*2000,dt),sol[(totIter-2000):,2],label="Last Part $x(t)$")
+        ax6.scatter([0.0,0.0,0.0],[0.0,pl.pi,2*pl.pi],color = "Red", marker="o",label="Electrodes")
+        ax6.set_title("Position of Time")
+        ax6.legend(loc = "best")
+        ax6.set_ylabel("$x$")
+        ax6.set_xlabel("$t'$")
+        fig6.savefig("restrictxoft.png")
 #
 #        fig7 = pl.figure()
 #        ax7 = fig7.add_subplot(111)
@@ -165,26 +166,31 @@ def main():
 
 
         
-        
-    #make data file with x
-    dataOut = open("data.txt","w")
-    for alpha,beta in enumerate(sol[(totIter-10000):,2]):
-        dataOut.write(str(beta)+"\n")
-    dataOut.close()
+        #make data file with x
+        dataOut = open("data.txt","w")
+        for alpha,beta in enumerate(sol[(totIter-10000):,2]):
+            dataOut.write(str(beta)+"\n")
+        dataOut.close()
     
-    # make text file with all extra information
-    outFile = open("info.dat","w")
-    outFile.write("Info \n coefficient: " + str(coef) \
-            + "\nwave number: " +str(k)\
-            + "\nomega: " + str(w)\
-            + "\ndamping: " + str(damp)\
-            + "\ntime step: " + str(dt)\
-            + "\ntotal time: " + str(dt*totIter)\
-            + "\ntotal iterations: " + str(totIter) \
-            + "\nInitial conditions: " +str(x0))
-    outFile.close()
+        # make text file with all extra information
+        outFile = open("info.dat","w")
+        outFile.write("Info \n coefficient: " + str(coef) \
+                + "\nwave number: " +str(k)\
+                + "\nomega: " + str(w)\
+                + "\ndamping: " + str(damp)\
+                + "\ntime step: " + str(dt)\
+                + "\ntotal time: " + str(dt*totIter)\
+                + "\ntotal iterations: " + str(totIter) \
+                + "\nInitial conditions: " +str(x0))
+        outFile.close()
+
+        x0 = sol[-1,:]
+        # print("cos  " + str(pl.cos(time[-1])))
+        time = pl.arange(time[-1],time[-1]+totTime,dt)
+        # print("cos  " + str(pl.cos(time[0])))
+        #time = origtime + time[-1]%(2*pl.pi)
     
-    os.chdir("..")
+        os.chdir("..") 
     
 
 if __name__ == '__main__':

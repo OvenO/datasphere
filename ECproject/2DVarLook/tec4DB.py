@@ -22,14 +22,14 @@ def main():
     # PC sections
     os.chdir(os.path.expanduser("~/Data/EC/4DBlock"))
 
-    dt = .05 
+    dt = .1
     # total number of iterations to perform
-    totIter = 600
+    totIter = 1500
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = 5.0
+    coef = 1.1
     k = 1.0
     w = 2.0
     damp = .1
@@ -41,21 +41,33 @@ def main():
     # make ec object
     elc = ec.electricCurtain()
     
+    ## define the lower left corner of block
+    #initvx = -2.0
+    #initvy = 0.0
+    #initx = .6
+    #inity = 1.5
+
     # define the lower left corner of block
     initvx = 0.0
     initvy = 0.0
-    initx = 0.0
-    inity = 0.0
+    initx = .6
+    inity = 1.5
 
+    ## define dimensions of block
+    #xby = 2.0
+    #yby = 0.0
+    #vxby = 4.0
+    #vyby = 0.0
+    
     # define dimensions of block
-    xby = 1.0*pl.pi
-    yby = 6.0
+    xby = 2.0
+    yby = 3.0
     vxby = 0.0
     vyby = 0.0
 
     # define number of points in each direction
-    numx =  50.0
-    numy =  50.0
+    numx =  10.0
+    numy =  10.0
     numvx = 1.0
     numvy = 1.0
 
@@ -70,7 +82,6 @@ def main():
     # lets try this. can only implement it after the poincare section points are taken.
     # SKIP CAN NOT BE LESS THAN 1
     skip = 2
-    
 
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
@@ -124,7 +135,20 @@ def main():
     datfile.write("VARIABLES = vx, vy, x, y")
     datfile.write("\n")
 
+    # same thing for poindat.txt
+    poinfile = open("poindat.txt","a")
+   
+    poinfile.write('''TITLE = "4DBLOCK"''')
+    poinfile.write("\n")
+    poinfile.write("VARIABLES = vx, vy, x, y")
+    poinfile.write("\n")
+
+
     filearr = pl.array([])
+
+    # a simple count variable to be used as file names. (was having repeat issues with file names
+    # whun i was uing the sum of the indicies. silly owen.
+    curp = 0 
 
     for kapa in range (int(numvx)):
         for gama in range(int(numvy)):
@@ -132,7 +156,8 @@ def main():
                 for beta in range(int(numy)):
 
                     # make a file for the curent particles solution
-                    curpstr =  str(alpha)+str(beta)+str(kapa)+str(gama)
+                    curp += 1
+                    curpstr = str(curp)
 
                     # keeptrack of the fiels for later
                     filearr = pl.append(filearr,curpstr)
@@ -155,10 +180,13 @@ def main():
                         toadd += "\n"
                         curpdatfile.write(toadd)
 
-
                     curpdatfile.close()
     
-    for i in range(int(totIter/skip)-totIter%skip):
+    checktime = 2*pl.pi/w
+    checknext = 0.0
+    checkpoint = 0
+
+    for i in range(totIter):
         # DATAPACKING=POINT should mean that the format is as such:
         # vx   vy   x    y
         # #'s  #'s  #'s  #'s
@@ -168,17 +196,31 @@ def main():
         datfile.write("ZONE   I="+str(len(filearr))+" DATAPACKING=POINT")
         datfile.write("\n")
 
+        if (i==checkpoint):
+            poinfile.write("ZONE   I="+str(len(filearr))+" DATAPACKING=POINT")
+            poinfile.write("\n")
+
+
         for a,b in enumerate(filearr):
             curfile = open(b,"r")
             lines = curfile.readlines()
-            tofile = lines[i*skip]
+            tofile = lines[i]
             datfile.write(tofile)
+
+            if (i==checkpoint):
+                poinfile.write(tofile)
 
             curfile.close()
 
+        if (i==checkpoint):
+            checknext += checktime
+            checkpoint = int(checknext/dt+.5)
+    
+
     datfile.close()
+    poinfile.close()
         
-    os.system("rm 1* 2* 3* 4* 5* 6* 7* 8* 9* 0*")
+    os.system("rm 1* 2* 3* 4* 5* 6* 7* 8* 9*")
         
     os.chdir("..")
 

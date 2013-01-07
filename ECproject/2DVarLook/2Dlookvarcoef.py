@@ -30,12 +30,14 @@ def main():
     parser.add_argument("-g",action="store",dest="g",type=float,default=.1) 
     # the damping coefficient...
     parser.add_argument("-b",action="store",dest="b",type=float,default=.1)
+            # stable for .1 (right now 11/8/12) 
+
     # starting coefficient...
-    parser.add_argument("-c",action="store",dest="c",type=float,default=5.0)
+    parser.add_argument("-c",action="store",dest="c",type=float,default=6.0)
     # number of parameter checks...
-    parser.add_argument("-n",action="store",dest="n",type=int,default=30)
+    parser.add_argument("-n",action="store",dest="n",type=int,default=20)
     # increase in coefficent per param check...
-    parser.add_argument("-i",action="store",dest="i",type=float,default= -.2)
+    parser.add_argument("-i",action="store",dest="i",type=float,default= .25)
     # pass in directory name also :/
     timestring = thetime.asctime()
     newtimestr = ""
@@ -46,16 +48,16 @@ def main():
 
     inargs = parser.parse_args()
 
-    dt = .025 
+    dt = .01 
     # total number of iterations to perform
-    totIter = 5018
+    totIter = 50000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
     coef = inargs.c
     k = 1.0
-    w = 2.0
+    w = 3.0
     damp = inargs.b
     g = inargs.g
 
@@ -73,7 +75,7 @@ def main():
     initvx = 0.0
     initvy = 0.0
     initx = 1.5
-    inity = 2.2
+    inity = 1.8
 
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
@@ -111,6 +113,7 @@ def main():
 
 
     checkT = 2*pl.pi/w
+    checkPoint = 0
 
     for j in range(numParamChecks):
         apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
@@ -119,7 +122,10 @@ def main():
         for a in range(len(sol[:,0])):
             sol[a,2] = sol[a,2]%modNum
 
-        coef += incCf
+        #coef += incCf
+        w += incCf
+
+        newstart = checkPoint%totIter
 
         checknextT = 0.0
         checkPoint = 0
@@ -158,11 +164,11 @@ def main():
                 # IN ORDER TO AVOID PROPAGATING ERROR THAT IS F-ING UP THE POINCARE SECTIONS WE NEED
                 # TO CALCULATE "checkPoint" EVERYTIME USING THE FLOATS.
                 # GOD DAMN IT OWEN
-                if i==checkPoint:
+                if i==(checkPoint+newstart):
                     # add first poincare section to poincare data file
                     writepoin.write(toadd)
 
-                    checknextT += checkT
+                    checknextT += checkT 
                     # the +.5 efectivly rounds the number apropriatly
                     checkPoint = int(checknextT/dt+.5)
         else:
@@ -184,7 +190,7 @@ def main():
                 newline = curline + toadd + "\n"
                 writedat.write(newline)
 
-                if i==checkPoint:
+                if i==(checkPoint+newstart):
                     writepoin.write(newline) 
 
                     checknextT += checkT
@@ -202,7 +208,7 @@ def main():
 
         # this is the feedback information to make the transitions smooth
         x0 = sol[-1,:]
-        time+=totTime%(2*pl.pi/w)
+        time = pl.arange(time[-1],time[-1]+totTime,dt)
 
     os.remove("temp.txt")
     os.remove("pointemp.txt")
