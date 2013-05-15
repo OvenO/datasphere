@@ -28,12 +28,21 @@ def main():
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
+    # parameters around stable oscilation
+    #surf = 1.0
+    #coef = 1.1
+    #k = 1.0
+    #w = 1.0
+    #damp = .05
+    #g = .025
+    
+    # parameters for what should be chaotic but orderd trajectories
     surf = 1.0
-    coef = 1.1
+    coef = 1.2
     k = 1.0
-    w = 2.0
+    w = 1.0
     damp = .1
-    g = .1
+    g = .20
 
     # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
@@ -47,28 +56,38 @@ def main():
     #initx = .6
     #inity = 1.5
 
-    # define the lower left corner of block
-    initvx = 0.0
+    initvx = -1.5
     initvy = 0.0
-    initx = .6
-    inity = 1.5
+    initx = 1.0
+    inity = 2.0
 
-    ## define dimensions of block
-    #xby = 2.0
-    #yby = 0.0
-    #vxby = 4.0
-    #vyby = 0.0
-    
+    ## define the lower left corner of block
+    #initvx = 0.0
+    #initvy = 0.0
+    #initx = .6
+    #inity = 1.5
+
     # define dimensions of block
     xby = 2.0
-    yby = 3.0
-    vxby = 0.0
+    yby = 0.0
+    vxby = 4.0
     vyby = 0.0
 
+    #xby = 0.0
+    #yby = 3.0
+    #vxby = 0.0
+    #vyby = 2.0
+    
+    # define dimensions of block
+    #xby = 2.0
+    #yby = 3.0
+    #vxby = 0.0
+    #vyby = 0.0
+
     # define number of points in each direction
-    numx =  10.0
-    numy =  10.0
-    numvx = 1.0
+    numx =  500.0
+    numy =  1.0
+    numvx = 500.0
     numvy = 1.0
 
     # distance between points

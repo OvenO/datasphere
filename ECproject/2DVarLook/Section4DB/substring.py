@@ -3,6 +3,15 @@ import shutil
 import time
 
 def main():
+
+# define lower left of block as corner # 1
+c1 = [,]
+
+
+
+
+
+# Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old Old
     #initial_g = .1
     #increace_g = .05
     #num_g = 5

@@ -3,7 +3,7 @@
 # It should be allowed to run for up to x hour.
 #PBS -l walltime=30:00:00
 # Name of job.
-#PBS -N ECtec4DB
+#PBS -N ECtec2DB
 # Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
 #PBS -j oe   
 # Send me mail on job start, job end and if job aborts

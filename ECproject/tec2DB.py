@@ -24,12 +24,12 @@ def main():
 
     dt = .1
     # total number of iterations to perform
-    totIter = 1200
+    totIter = 4000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
-    coef = .32
+    coef = .23
     k = 1.0
     w = 1.0
     damp = .1
@@ -50,8 +50,8 @@ def main():
     vxby = 8.0
 
     # define number of points in each direction
-    numx =  200.0
-    numvx = 200.0
+    numx =  45.0
+    numvx = 45.0
 
     # distance between points
     incx = xby/numx

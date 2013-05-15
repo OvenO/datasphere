@@ -27,17 +27,17 @@ def main():
     # YAY ARGPARSE
     parser = argparse.ArgumentParser()
     # this is what we want g to be
-    parser.add_argument("-g",action="store",dest="g",type=float,default=.1) 
+    parser.add_argument("-g",action="store",dest="g",type=float,default=.02) 
     # the damping coefficient...
-    parser.add_argument("-b",action="store",dest="b",type=float,default=.1)
+    parser.add_argument("-b",action="store",dest="b",type=float,default=.05)
             # stable for .1 (right now 11/8/12) 
 
     # starting coefficient...
-    parser.add_argument("-c",action="store",dest="c",type=float,default=6.0)
+    parser.add_argument("-c",action="store",dest="c",type=float,default=2.5)
     # number of parameter checks...
     parser.add_argument("-n",action="store",dest="n",type=int,default=20)
     # increase in coefficent per param check...
-    parser.add_argument("-i",action="store",dest="i",type=float,default= .25)
+    parser.add_argument("-i",action="store",dest="i",type=float,default= .02)
     # pass in directory name also :/
     timestring = thetime.asctime()
     newtimestr = ""
@@ -50,14 +50,14 @@ def main():
 
     dt = .01 
     # total number of iterations to perform
-    totIter = 50000
+    totIter = 80000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
     surf = 1.0
     coef = inargs.c
     k = 1.0
-    w = 3.0
+    w = 2.0
     damp = inargs.b
     g = inargs.g
 
@@ -75,7 +75,7 @@ def main():
     initvx = 0.0
     initvy = 0.0
     initx = 1.5
-    inity = 1.8
+    inity = 2.2
 
     # initial conditions vector
     # set up: [xdot,ydot,x,y]
@@ -112,9 +112,9 @@ def main():
     poinfile.close()
 
 
-    checkT = 2*pl.pi/w
-    checkPoint = 0
-
+    #checkT = 2*pl.pi/w
+    #checkPoint = 0
+    l = 0
     for j in range(numParamChecks):
         apx = ec.CentreLineApx(coef,k,w,damp,surf,g)
         sol = odeint(apx.f,x0,time)
@@ -123,12 +123,12 @@ def main():
             sol[a,2] = sol[a,2]%modNum
 
         #coef += incCf
-        w += incCf
+        damp += incCf
 
-        newstart = checkPoint%totIter
+        #newstart = checkPoint%totIter
 
-        checknextT = 0.0
-        checkPoint = 0
+        #checknextT = 0.0
+        #checkPoint = 0
         
 
         # copy the data file to temp and read from the temp inorder to rewrite the data file.
@@ -162,15 +162,18 @@ def main():
                 # this if statements cecks to see if we are at the right point to grab the
                 # timesliced data from the solution. 
                 # IN ORDER TO AVOID PROPAGATING ERROR THAT IS F-ING UP THE POINCARE SECTIONS WE NEED
-                # TO CALCULATE "checkPoint" EVERYTIME USING THE FLOATS.
+                # TO .....
                 # GOD DAMN IT OWEN
-                if i==(checkPoint+newstart):
+
+                # this should work better for poincare sections
+                if ((l*dt)%(2*pl.pi/w)<dt):
                     # add first poincare section to poincare data file
                     writepoin.write(toadd)
-
-                    checknextT += checkT 
+                    l+=1
+                    #checknextT += checkT 
                     # the +.5 efectivly rounds the number apropriatly
-                    checkPoint = int(checknextT/dt+.5)
+                    #checkPoint = int(checknextT/dt+.5)
+                l+=1
         else:
             oldlable = readdat.readline()
             # pop off the "\n" so we can append the new lable
@@ -190,13 +193,16 @@ def main():
                 newline = curline + toadd + "\n"
                 writedat.write(newline)
 
-                if i==(checkPoint+newstart):
+                #if i==(checkPoint+newstart):
+                # this should work better for poincare sections
+                if ((l*dt)%(2*pl.pi/w)<dt):
+                    print((l*dt)%(2*pl.pi/w))
                     writepoin.write(newline) 
-
-                    checknextT += checkT
+                    #checknextT += checkT
                     # the +.5 efectivly rounds the number apropriatly
-                    checkPoint = int(checknextT/dt+.5)
+                    #checkPoint = int(checknextT/dt+.5)
                      
+                l+=1
         # close the data file
         readdat.close()
         writedat.close()
@@ -208,7 +214,7 @@ def main():
 
         # this is the feedback information to make the transitions smooth
         x0 = sol[-1,:]
-        time = pl.arange(time[-1],time[-1]+totTime,dt)
+        time = pl.arange(time[-1]+dt,time[-1]+totTime+dt,dt)
 
     os.remove("temp.txt")
     os.remove("pointemp.txt")

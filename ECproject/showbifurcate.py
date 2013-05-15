@@ -17,7 +17,7 @@ def main():
 
     dt = .05 
     # total number of iterations to perform
-    totIter = 50000
+    totIter = 60000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     origtime = time
@@ -29,15 +29,15 @@ def main():
     w = 1.0
     damp = .10
 
-    numParamChecks = 500
-    #numParamChecks = 1000
+    #numParamChecks = 700
+    numParamChecks = 2000
 
    # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/k
     
     # increase coeff by:
     #incCf = .0009
-    incCf = .00004
+    incCf = .0002
     # make ec object
     elc = ec.electricCurtain()
 
@@ -95,7 +95,7 @@ def main():
     ax8.set_ylabel("Position $x$")
     ax8.set_xlabel("Coefficient $A'$")
     #fig8.savefig("trybif.eps")
-    fig8.savefig("010313trybif14.pdf",dpi = 300)
+    fig8.savefig("012113trybif2.eps",dpi = 300)
     #pl.show()    
 
     # make text file with all extra information
