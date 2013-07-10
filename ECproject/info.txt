@@ -1,9 +1,0 @@
-Info 
- coefficient: 0.655
-wave number: 1.0
-omega: 1.0
-damping: 0.1
-time step: 0.05
-total time: 3000.0
-total iterations: 60000
-Initial conditions: [ 0.86879219  0.          0.99170243  1.        ]

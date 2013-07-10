@@ -1,0 +1,13 @@
+# This job needs 1 compute node with 1 processor per node.
+#PBS -l nodes=1:ppn=1
+# It should be allowed to run for up to x hour.
+#PBS -l walltime=30:00:00
+# Name of job.
+#PBS -N lyapunov
+# Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
+#PBS -j oe   
+
+cd /users/o/m/omyers/datasphere/ECproject/1DEC/SingleTraj/
+echo "This is myjob running on " `hostname`
+python lyapunov.py
+
