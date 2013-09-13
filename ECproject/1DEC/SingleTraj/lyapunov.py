@@ -79,6 +79,10 @@ def renormalize(x_unpurt,x_puturb,epsilon):
     xnew[0] = x_unpurt[0]+(epsilon/final_dist)*(x_puturb[0]-x_unpurt[0])
     xnew[2] = x_unpurt[2]+(epsilon/final_dist)*(x_puturb[2]-x_unpurt[2])
 
+    if pl.isnan(xnew[0]):
+        print('RENORMALIZED PARRALEL VECTORS !!! FIX THIS!!!!')
+        sys.exit()
+
     return xnew
 #**********************************************************************************************
 #**********************************************************************************************
@@ -105,7 +109,6 @@ def plot_first_sol(sol,dt):
     first_ax.set_ylabel("$x_2$",fontsize=25)
     #first_ax.set_xlim([0,2*pl.pi])
     #first_ax.set_ylim([-1.3,1.3])
-    first_fig.tight_layout()
     first_fig.savefig("first_plot.png")
     os.system("open first_plot.png")
     
@@ -114,29 +117,50 @@ def plot_first_sol(sol,dt):
 def main():
     
     # initial purturbation size
-    epsilon = 1.0e-8
+    # try
+    epsilon = 1.0e-7
+    # good
+    #epsilon = 1.0e-10
+    # works 
+    # epsilon = 1.0e-10
+    # 1.0e-13
+    
+    # period variable should probably just be kept at the actual period (2*pl.pi) but the purpose of
+    # this variable is to alow us to changhe the lenght of time we wate before we colect the
+    # distance information and renormalize. This is also nesssasary in the final calculation of the
+    # LE becae LE = 1/period * ln(rm/r0).
+    period = 2.0*pl.pi
+    print('period is: ' + str(period))
+
+    print('epsilon is: ' + str(epsilon)+'\n')
+    # works
 
     # first throw away (to get initial conditions in atractor)
-    throw_away_1 = 200
+    throw_away_1 = 100
+    print('throw_away_1 is: ' +str(throw_away_1)+'\n') 
     # second throw away (to make sure puturbed trajectory is aligned)
-    throw_away_2 = 200
+    throw_away_2 = 100
+    print('throw_away_2 is: ' +str(throw_away_2)+'\n') 
 
     # number of cycle-sets to go through
-    # try 
-    num = 60000
+    num = 10000
+    print('number of cycle-sets to go through is: ' + str(num))
     # works
+    #num = 120000
+    #num = 60000
     #num = 16000
     #num = 30000
     #num = 8000
     
-    dt = .001 
+    dt = .0001 
+    print('dt is: ' + str(dt))
     # total number of sterations to perform inorder to get cycles rioht
-    totIter = 2.0*pl.pi/dt
-    totTime = totIter*dt
+    totTime = period
     time = pl.arange(0.0,totTime,dt)
     
     #time array for the first run to get initial condition in strange atractor
-    first_time = pl.arange(0.0,throw_away_1*2.0*pl.pi/dt,dt)
+    first_time = pl.arange(0.0,throw_away_1*2.0*pl.pi,dt)
+    print('len(first_time): ' + str(len(first_time)))
     
     surf = 1.0
     coef = 1.7
@@ -149,9 +173,9 @@ def main():
     modNum = 2.0*pl.pi
     
     # some random initial conditions
-    initx = 4.549
+    initx = 3.0
     inity = 1.0
-    initvx = -.2037
+    initvx = .1600
     initvy = 0.0
 
     # now find initial condition in stange atractor by running far in time. print this to use it for
@@ -176,8 +200,8 @@ def main():
     arr_orig = pl.array([])
     arr_othr = pl.array([])
 
-    full_orig = pl.array([])
-    full_othr = pl.array([])
+    #full_orig = pl.array([])
+    #full_othr = pl.array([])
     
     # array to keep distance after driving cycle 
     darr = pl.array([]) 
@@ -199,15 +223,35 @@ def main():
             darr = pl.append(darr,distance(sol[-1,:],sol_other[-1,:]))
             
             watch_le += pl.log(abs(darr[-1]/epsilon))
-            cur_avg = watch_le/(i-throw_away_2+1)
+            cur_avg = watch_le/(i-throw_away_2+1)/period
             watch = pl.append(watch,cur_avg)
 
 
         #full_orig = pl.append(full_orig,sol)
         #full_othr = pl.append(full_othr,sol_other)
+        
+        # This is to see that our orthogonalization is working and that we are in the chaotic
+        # atractor
+        #if i> throw_away_2:
+        #    poin = get_poin(sol,dt)
+        #    poin_other = get_poin(sol_other,dt)
 
-#        poin = get_poin(sol,dt)
-#        poin_other = get_poin(sol_other,dt)
+        #    fig = pl.figure()
+        #    ax = fig.add_subplot(111)
+        #    ax.scatter(sol[-1,2],sol[-1,0],s=1.0,color="Red")
+        #    ax.scatter(sol_other[-1,2],sol[-1,0],s=.5,color="Blue")
+        #    #ax.set_xlabel("$x_1$",fontsize=25)
+        #    #ax.set_ylabel("$x_2$",fontsize=25)
+        #    #ax.set_xlim([0,2*pl.pi])
+        #    #ax.set_ylim([-1.3,1.3])
+        #    fig.savefig("LyapImgs/"+str(i)+".png")
+
+        #    fig2 = pl.figure()
+        #    ax2 = fig2.add_subplot(111)
+        #    ax2.scatter([0,pl.pi,2*pl.pi],[0,0,0],s=10.0)
+        #    ax2.plot(sol[:,2],sol[:,0])
+        #    fig2.savefig("LyapImgs/"+str(i+1000)+".png")
+
 
         x0 = sol[-1,:]
         x_other = renormalize(x0,sol_other[-1,:],epsilon)
@@ -219,7 +263,7 @@ def main():
     #full_othr = full_othr.reshape(-1,4)
 
     eps_arr = pl.zeros(len(darr))+epsilon
-    le = pl.zeros(len(darr))+pl.log(abs(darr/epsilon))
+    le = pl.zeros(len(darr))+pl.log(abs(darr/epsilon))/period
 
     le_avg = 0.0
     for i,j in enumerate(le):
@@ -229,16 +273,16 @@ def main():
     print("le is")
     print(le_avg)
 
-    #fig = pl.figure()
-    #ax = fig.add_subplot(111)
-    #ax.scatter(pl.arange(len(watch)),watch,s=.1)
-    ##ax.set_xlabel("$x_1$",fontsize=25)
-    ##ax.set_ylabel("$x_2$",fontsize=25)
-    ##ax.set_xlim([0,2*pl.pi])
-    ##ax.set_ylim([-1.3,1.3])
+    fig = pl.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(pl.arange(len(watch)),watch,s=.1)
+    #ax.set_xlabel("$x_1$",fontsize=25)
+    #ax.set_ylabel("$x_2$",fontsize=25)
+    #ax.set_xlim([0,2*pl.pi])
+    #ax.set_ylim([-1.3,1.3])
     #fig.tight_layout()
-    #fig.savefig("convergence.png")
-    #os.system("open convergence.png")
+    fig.savefig("convergence.png")
+    os.system("open convergence.png")
  
 
     ## plot of PC sections (red Blue)

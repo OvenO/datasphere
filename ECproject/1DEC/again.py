@@ -42,16 +42,37 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dir', action = 'store', dest = "dir",type = str,required = True)
-    parser.add_argument('--file', action = 'store', dest = "file",type = str,required = True)
+    parser.add_argument('--file', action = 'store', dest = "file",type = int,required = True)
     parser.add_argument('--totiter', action = 'store', dest = "totIter",type = str, required = True)
-
+    parser.add_argument('--sliced', action = 'store', dest = "sliced",type = str,required = True)
     inargs = parser.parse_args()
 
     dir = inargs.dir
-    file = inargs.file
+    file = str(inargs.file)+'poindat.txt'
+    if inargs.sliced == 'True':
+        sliced = True
+    elif inargs.sliced == 'False':
+        sliced = False
+
+
+    print('inargs.totItier: ' +str(inargs.totIter))
+    print('inargs.dir: ' +str(inargs.dir))
+    print('inargs.file: ' + str(inargs.file))
+    print('inargs.sliced: '+str(inargs.sliced))
     totIter = float(inargs.totIter)
 
-    info_file = open("/users/o/m/omyers/Data/EC/2DBlock/Old/"+dir+"/info.txt","r")
+    # The reason we add in the inargs.file (which is just an iteger) is becase we need the directory
+    # in the /tmp file to be compleately unique for each file. Becasue some files might be handeld
+    # by the same node we need to distiguesh. I also want the file being delt with in a directory
+    # becasue we also need an info file that goes with it -> if we have two different systems
+    # running and the node is handeling both of them then they would end up with the same info file.
+    # The same thing could happen with the poindat.txt files too but that is much less likely.
+    print('ls /tmp: ' + str(os.listdir('/tmp')))
+    print('ls /tmp/dir+inargs.file/: ' + str(os.listdir('/tmp/'+dir+str(inargs.file))))
+
+    #info_file = open("/users/o/m/omyers/Data/EC/2DBlock/Old/"+dir+"/info.txt","r")
+    # trying to use /tmp folder to speed things up
+    info_file = open("/tmp/"+dir+str(inargs.file)+"/info.txt","r")
     lns = info_file.readlines()
 
     surface = float(lns[3])
@@ -67,7 +88,9 @@ def main():
     time = pl.arange(0.0,totTime,dt)
 
 
-    os.chdir(os.path.expanduser("~/Data/EC/2DBlock/Old/"+dir))
+    # try /tmp/ folder
+    os.chdir("/tmp/"+dir+str(inargs.file))
+    #os.chdir(os.path.expanduser("~/Data/EC/2DBlock/Old/"+dir))
 
     # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/wave_num
@@ -108,19 +131,22 @@ def main():
 
         sol = odeint(apx.f,x0,time)
 
-        
-        for a in range(len(sol[:,0])):
-            sol[a,2] = sol[a,2]%modNum
-            if(((a*dt)%(2.0*pl.pi/omega))<dt):
-                all_poin = pl.append(all_poin,sol[a,:])
-                
-                if(i==0):
-                    num_ts += 1
+        if sliced:
+            for a in range(len(sol[:,0])):
+                sol[a,2] = sol[a,2]%modNum
+                if(((a*dt)%(2.0*pl.pi))<dt):
+                    all_poin = pl.append(all_poin,sol[a,:]) 
+                    if(i==0): 
+                        num_ts += 1 
+        else: 
+            all_poin = pl.append(all_poin,sol)
+            num_ts += len(sol)
+
 
     # Now reshape all_poin and put it in the file corectly 
     print("p_num is: " +str(p_num))
     print("num_ts is: "+ str(num_ts))
-    all_poin = all_poin.reshape(p_num,num_ts,4)
+    all_poin = all_poin.reshape(p_num,-1,4)
 
     # add the poin sections back to file. Starting at 1 because we dont need to repeat the PC
     # section that is already there.
@@ -140,6 +166,13 @@ def main():
     cur_file.close()
 
     print (datetime.now() - start_time)
+    
+    os.system('gzip /tmp/'+dir+str(inargs.file)+'/'+file)
+    os.system('cp /tmp/'+dir+str(inargs.file)+'/'+file+'.gz omyers/o/m/omyers/Data/EC/2DBlock/Old/'+dir+'/'+file+'.gz')
+    os.system('rm -r /tmp/'+dir+str(inargs.file))
+    
+    #os.system('cp -r /tmp/'+dir +' ' + '/users/o/m/omyers/Data/EC/2DBlock/Old/'+dir)
+    #os.system('rm -r /tmp/'+dir)
         ## make a file for the curent particles solution
         #curp += 1
         #curpstr = str(inargs.bnum) +"_"+ str(curp)

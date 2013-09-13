@@ -12,4 +12,4 @@ echo "This is myjob running on " `hostname`
 #python takelast.py --dir Block_Fri_May_31_113805_2013_
 #python takelast.py --dir Block_Tue_Jun_4_103413_2013_
 #python takelast.py --dir Block_Thu_Jun_20_111514_2013_
-python takelast.py --dir Block_Fri_Jun_21_131756_2013_
+python takelast.py --dir Block_Thu_Sep_5_094511_2013_

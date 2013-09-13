@@ -186,7 +186,9 @@ def main():
     #initvy = 0.0
     
     A = coef
-    A_max = .2132
+    A_max = .213
+    # This seams like a good stoping point. just want to try something else for a little
+    #A_max = .2132
     # this one good for Rightshift
     #A_step = .0004
     # this one good for LeftShift
