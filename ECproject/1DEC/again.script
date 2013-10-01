@@ -8,11 +8,6 @@
 # Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
 #PBS -j oe   
 
-#if [ $PBS_ARRAYID = '0' ]; then
-#    cp -r /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR /tmp/
-#    rm -r /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR
-#fi
-
 # Using /tmp should speed things up. This file is local to each node. gzip the file and send it to
 # its final destination ins /Data/...
 
@@ -33,15 +28,4 @@ echo 'This is the dir ' $DIR
 # or just the poincare sections
 python again.py --file $PBS_ARRAYID --dir $DIR --sliced $SLICED --totiter $TOTITER 
 
-#gzip /tmp/$DIR/$PBS_ARRAYID'poindat.txt'
-#cp /tmp/$DIR/$PBS_ARRAYID'poindat.txt'.gz /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/$PBS_ARRAYID'poindat.txt'.gz
-#if [ $PBS_ARRAYID = '0' ]; then
-#    cp -r /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR /tmp/
-#    rm -r /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR
-#fi
-#if [ $PBS_ARRAYID = $FIN ]; then 
-#    echo 'last file'
-#    cd /tmp/
-#    tar -cvzf $DIR.tar.gz $DIR
-#    cp $DIR.tar.gz /users/o/m/omyers/Data/EC/2DBlock/Old/ 
-#fi
+

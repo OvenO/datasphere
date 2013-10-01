@@ -12,7 +12,6 @@ from scipy.integrate import odeint
 import shutil
 import time as thetime
 import argparse
-from datetime import datetime
 #import gc
 #import weakref
 
@@ -32,8 +31,6 @@ def get_init_arr(lines):
     return arr, (abs(count)-1)
 
 def main():
-    # keep track of runtime
-    start_time = datetime.now()
     
     # before anything get us into the NormAll directory. this is the directory that will hold the
     # directories with the different data sets. We need to start keeping track of phase diagrams and
@@ -42,55 +39,32 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dir', action = 'store', dest = "dir",type = str,required = True)
-    parser.add_argument('--file', action = 'store', dest = "file",type = int,required = True)
-    parser.add_argument('--totiter', action = 'store', dest = "totIter",type = str, required = True)
-    parser.add_argument('--sliced', action = 'store', dest = "sliced",type = str,required = True)
+    parser.add_argument('--file', action = 'store', dest = "file",type = str,required = True)
+
     inargs = parser.parse_args()
 
     dir = inargs.dir
-    file = str(inargs.file)+'poindat.txt'
-    if inargs.sliced == 'True':
-        sliced = True
-    elif inargs.sliced == 'False':
-        sliced = False
+    file = inargs.file
 
-
-    print('inargs.totItier: ' +str(inargs.totIter))
-    print('inargs.dir: ' +str(inargs.dir))
-    print('inargs.file: ' + str(inargs.file))
-    print('inargs.sliced: '+str(inargs.sliced))
-    totIter = float(inargs.totIter)
-
-    # The reason we add in the inargs.file (which is just an iteger) is becase we need the directory
-    # in the /tmp file to be compleately unique for each file. Becasue some files might be handeld
-    # by the same node we need to distiguesh. I also want the file being delt with in a directory
-    # becasue we also need an info file that goes with it -> if we have two different systems
-    # running and the node is handeling both of them then they would end up with the same info file.
-    # The same thing could happen with the poindat.txt files too but that is much less likely.
-    print('ls /tmp: ' + str(os.listdir('/tmp')))
-    print('ls /tmp/dir+inargs.file/: ' + str(os.listdir('/tmp/'+dir+str(inargs.file))))
-
-    #info_file = open("/users/o/m/omyers/Data/EC/2DBlock/Old/"+dir+"/info.txt","r")
-    # trying to use /tmp folder to speed things up
-    info_file = open("/tmp/"+dir+str(inargs.file)+"/info.txt","r")
+    info_file = open("/users/o/m/omyers/Data/EC/4DBlock/Old/"+dir+"/info.txt","r")
     lns = info_file.readlines()
 
     surface = float(lns[3])
     wave_num = float(lns[5])
     omega = float(lns[7])
-    damping = float(lns[9])
+    coef = float(lns[9])
     grav = float(lns[11])
     dt = float(lns[13])
 
+    # total number of iterations to perform
+    totIter = 60000
+    #totIter = 5000
     totTime = totIter*dt
     print("dt is: " + str(dt))
     print("totTime is: "+str(totTime))
     time = pl.arange(0.0,totTime,dt)
 
-
-    # try /tmp/ folder
-    os.chdir("/tmp/"+dir+str(inargs.file))
-    #os.chdir(os.path.expanduser("~/Data/EC/2DBlock/Old/"+dir))
+    os.chdir(os.path.expanduser("~/Data/EC/4DBlock/Old/"+dir))
 
     # how many cells is till periodicity use x = n*pi/k (n must be even #)
     modNum = 2*pl.pi/wave_num
@@ -103,7 +77,7 @@ def main():
     cur_file = open(file,"a")
 
     # get coef from file
-    coefficient = float(cur_lines[0].split()[-1])
+    damp = float(cur_lines[0].split()[-1])
     
     # get the new initial conditions as an array in the form
     # arr[i,j]
@@ -118,35 +92,29 @@ def main():
 
     all_poin = pl.array([])
 
-    # count the number of poin sections. Needd for reshaping all_poin array
+    # count the number of poin sections. Need for reshaping all_poin array
     num_ts = 0
-    #print("pnum is : " + str(p_num))
-    #print("len(init) : " + str(len(init[:,0])))
     for i in xrange(p_num):
 
-        apx = ec.surfCentreLineApx(coefficient,wave_num,omega,damping)
+        apx = ec.CentreLineApx(coef,wave_num,omega,damp,surface,grav)
 
         # itial conditions to next point
         x0 = init[i,:]
 
         sol = odeint(apx.f,x0,time)
 
-        if sliced:
-            for a in range(len(sol[:,0])):
-                sol[a,2] = sol[a,2]%modNum
-                if(((a*dt)%(2.0*pl.pi))<dt):
-                    all_poin = pl.append(all_poin,sol[a,:]) 
-                    if(i==0): 
-                        num_ts += 1 
-        else: 
-            all_poin = pl.append(all_poin,sol)
-            num_ts += len(sol)
-
+        for a in range(len(sol[:,0])):
+            sol[a,2] = sol[a,2]%modNum
+            if(((a*dt)%(2.0*pl.pi/omega))<dt):
+                all_poin = pl.append(all_poin,sol[a,:])
+                
+                if(i==0):
+                    num_ts += 1
 
     # Now reshape all_poin and put it in the file corectly 
     print("p_num is: " +str(p_num))
     print("num_ts is: "+ str(num_ts))
-    all_poin = all_poin.reshape(p_num,-1,4)
+    all_poin = all_poin.reshape(p_num,num_ts,4)
 
     # add the poin sections back to file. Starting at 1 because we dont need to repeat the PC
     # section that is already there.
@@ -162,17 +130,10 @@ def main():
             toadd = "%15.6f %15.6f %15.6f %15.6f"%(all_poin[-b,a,0],all_poin[-b,a,1],all_poin[-b,a,2],all_poin[-b,a,3])
             toadd += "\n"
             cur_file.write(toadd)
+
            
     cur_file.close()
 
-    print (datetime.now() - start_time)
-    
-    os.system('gzip /tmp/'+dir+str(inargs.file)+'/'+file)
-    os.system('cp /tmp/'+dir+str(inargs.file)+'/'+file+'.gz /users/o/m/omyers/Data/EC/2DBlock/Old/'+dir+'/'+file+'.gz')
-    os.system('rm -r /tmp/'+dir+str(inargs.file))
-    
-    #os.system('cp -r /tmp/'+dir +' ' + '/users/o/m/omyers/Data/EC/2DBlock/Old/'+dir)
-    #os.system('rm -r /tmp/'+dir)
         ## make a file for the curent particles solution
         #curp += 1
         #curpstr = str(inargs.bnum) +"_"+ str(curp)
@@ -199,6 +160,6 @@ def main():
         #    curpdatfile.write(toadd)
 
         #curpdatfile.close()
-        
+    
 if __name__ == '__main__':
     main()

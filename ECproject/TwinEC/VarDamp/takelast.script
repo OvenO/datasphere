@@ -1,0 +1,19 @@
+# This job needs 1 compute node with 1 processor per node.
+#PBS -l nodes=1:ppn=1
+# It should be allowed to run for up to x hour.
+#PBS -l walltime=30:00:00
+# Name of job.
+#PBS -N takelast
+# Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
+#PBS -j oe   
+
+cd /users/o/m/omyers/datasphere/ECproject/2DEC/VarDamp
+echo "This is myjob running on " `hostname`
+#python takelast.py --dir Block_Fri_May_31_113805_2013_
+#python takelast.py --dir Block_Tue_Jun_4_103413_2013_
+#python takelast.py --dir Block_Tue_Jun_4_160016_2013_
+#python takelast.py --dir Block_Wed_Jun_12_162718_2013_
+#python takelast.py --dir Block_Thu_Jun_13_164750_2013_
+#python takelast.py --dir Block_Fri_Jun_14_155051_2013_
+#python takelast.py --dir Block_Thu_Jun_20_140856_2013_
+python takelast.py --dir Block_Fri_Jun_21_130222_2013_
