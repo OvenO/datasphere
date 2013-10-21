@@ -1,2 +1,115 @@
-# For now I see no need to keep track of the output information files 
-*.o*
+# compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.lso
+
+# Packages # 
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.blg
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# movie and picture files #
+###########################
+*.png
+*.eps
+*.avi
+*.mov
+*.mp4
+*.pdf
+*.gif
+*.tiff
+*.tif
+*.jpeg
+# old movie format
+*.dv
+
+# no excel files, word or open office either #
+##############################################
+*.doc
+*.docx
+*.xls
+*.odt
+*.ppt
+#keynote
+*.key
+
+# Old particle tracking files #
+###############################
+*.doc
+*.trc
+
+# thumb nail datat?? #
+######################
+*.db
+
+# And all the poindat files #
+#############################
+*poindat*
+poincar.txt
+# We really dont need this stuf either (too old and hefty)
+OldSingPltTrag/
+BlockTrag/
+data.txt
+
+# imovie files #
+################
+iMovie\ Cache/
+iMovie\ Thumbnails/
+
+# vim swap files #
+##################
+*.swp
+
+# latex garbage (unwanted) #
+############################
+*.dvi
+*.ps
+#this is what .bib makes
+*.bbl
+*.blg
+#table of contents .tex makes
+*.toc 
+*.aux
+*.snm
+*.out
+*.nav
+
+
+# Xcode temporary file that should not be committed #
+#####################################################
+*~.nib
+
+# Mathmatica file #
+###################
+*.nb
+

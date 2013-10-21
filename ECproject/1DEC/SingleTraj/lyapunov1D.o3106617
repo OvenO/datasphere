@@ -1,0 +1,19 @@
+This is myjob running on  node524.cluster
+period is: 6.28318530718
+epsilon is: 1e-07
+
+throw_away_1 is: 360
+
+throw_away_2 is: 200
+
+number of cycle-sets to go through is: 10000
+dt is: 0.0001
+len(first_time): 22619468
+Traceback (most recent call last):
+  File "lyapunov.py", line 305, in <module>
+    main()
+  File "lyapunov.py", line 186, in main
+    first_sol = odeint(apx.f,x0,first_time)
+  File "/users/o/m/omyers/puthere/lib/python2.7/site-packages/scipy/integrate/odepack.py", line 144, in odeint
+    ixpr, mxstep, mxhnil, mxordn, mxords)
+MemoryError

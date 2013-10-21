@@ -1,0 +1,14 @@
+This is myjob running on  node398.cluster
+Couldnt get a file descriptor referring to the console
+epsilon is: 1e-07
+period is: 6.28318530718
+throw_away_1 is: 300
+throw_away_2 is: 50
+number of cycles is: 55000
+dt is: 0.001
+x0 from first_sol is:
+[  0.03178498  -1.1176221    0.42329307  20.12195527]
+x_other (purturbed is:
+[  0.03178505  -1.1176221    0.42329308  20.12195534]
+le is
+0.0797254057222

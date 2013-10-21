@@ -1,0 +1,7 @@
+This is myjob running on  node521.cluster
+Traceback (most recent call last):
+  File "takelast.py", line 51, in <module>
+    main()
+  File "takelast.py", line 27, in main
+    os.mkdir("Last")
+OSError: [Errno 17] File exists: 'Last'

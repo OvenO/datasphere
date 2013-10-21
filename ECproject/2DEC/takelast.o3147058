@@ -1,0 +1,11 @@
+This is myjob running on  node396.cluster
+Traceback (most recent call last):
+  File "takelast.py", line 56, in <module>
+    main()
+  File "takelast.py", line 48, in main
+    cur_dat = pl.genfromtxt(curfile,comments="Z")
+  File "/gpfs1/arch/x86_64/python2.7.2/lib/python2.7/site-packages/numpy/lib/npyio.py", line 1529, in genfromtxt
+    values = split_line(line)
+  File "/gpfs1/arch/x86_64/python2.7.2/lib/python2.7/site-packages/numpy/lib/_iotools.py", line 206, in _delimited_splitter
+    line = line.split(self.comments)[0].strip(asbytes(" \r\n"))
+MemoryError

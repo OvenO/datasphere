@@ -1,0 +1,16 @@
+This is myjob running on  node383.cluster
+epsilon is: 1e-13
+
+throw_away_1 is: 200
+
+throw_away_2 is: 200
+
+number of cycle-sets to go through is: 100000
+dt is: 0.001
+len(first_time): 1256638
+x0 from first_sol is:
+[ 2.6554253   0.          3.26776375  1.        ]
+x_other (purturbed is:
+[ 2.6554253   0.          3.26776375  1.        ]
+le is
+1.50989591267

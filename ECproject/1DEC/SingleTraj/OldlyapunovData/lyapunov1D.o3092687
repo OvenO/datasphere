@@ -1,0 +1,25 @@
+This is myjob running on  node395.cluster
+lyapunov.py:204: RuntimeWarning: divide by zero encountered in log
+  watch_le += pl.log(abs(darr[-1]/epsilon))
+lyapunov.py:79: RuntimeWarning: divide by zero encountered in double_scalars
+  xnew[0] = x_unpurt[0]+(epsilon/final_dist)*(x_puturb[0]-x_unpurt[0])
+lyapunov.py:79: RuntimeWarning: invalid value encountered in double_scalars
+  xnew[0] = x_unpurt[0]+(epsilon/final_dist)*(x_puturb[0]-x_unpurt[0])
+lyapunov.py:80: RuntimeWarning: divide by zero encountered in double_scalars
+  xnew[2] = x_unpurt[2]+(epsilon/final_dist)*(x_puturb[2]-x_unpurt[2])
+lyapunov.py:80: RuntimeWarning: invalid value encountered in double_scalars
+  xnew[2] = x_unpurt[2]+(epsilon/final_dist)*(x_puturb[2]-x_unpurt[2])
+lyapunov.py:225: RuntimeWarning: divide by zero encountered in log
+  le = pl.zeros(len(darr))+pl.log(abs(darr/epsilon))
+len(first_time): 6283186
+x0 from first_sol is:
+[-0.88308736  0.          2.76937029  1.        ]
+x_other (purturbed is:
+[-0.88308736  0.          2.76937029  1.        ]
+le is
+nan
+
+
+THIS HAPPEND WHEN WE TRIED AN EPSILON VALUE OF ORDER E-15
+
+Same thing happens for order E-14

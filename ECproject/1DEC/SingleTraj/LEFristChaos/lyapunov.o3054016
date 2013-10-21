@@ -1,0 +1,9 @@
+This is myjob running on  node335.cluster
+Couldnt get a file descriptor referring to the console
+Couldnt get a file descriptor referring to the console
+x0 from first_sol is:
+[ 0.16317549  0.          0.24182636  1.        ]
+x_other (purturbed is:
+[ 0.16317549  0.          0.24182637  1.        ]
+le is
+1.03041698827

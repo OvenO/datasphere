@@ -1,0 +1,17 @@
+This is myjob running on  node538.cluster
+Couldnt get a file descriptor referring to the console
+epsilon is: 1e-07
+
+throw_away_1 is: 260
+
+throw_away_2 is: 200
+
+number of cycle-sets to go through is: 50000
+dt is: 0.001
+len(first_time): 1633629
+x0 from first_sol is:
+[ 0.4652572   0.          3.71068542  1.        ]
+x_other (purturbed is:
+[ 0.46525725  0.          3.7106855   1.        ]
+le is
+0.185046092033
