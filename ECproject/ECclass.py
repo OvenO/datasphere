@@ -89,16 +89,23 @@ class CentreLineApx(object):
     def set_sol(self,sol):
         self.sol=sol
 
-    def square_wave(input):
-        output = pl.array([])
-        for i,j in enumerate(input):
-            if j%(2.0*pl.pi)<= pl.pi:
-                output = pl.append(output,1.0)
-            if j%(2.0*pl.pi)> pl.pi:
-                output = pl.append(output,-1.0)
-                    
+    def square_wave(self,input):
+        if type(input)==float:
+            if input%(2.0*pl.pi)<= pl.pi:
+                output = 1.0
+            if input%(2.0*pl.pi)> pl.pi:
+                output = -1.0
+        if (type(input)==pl.ndarray)or(type(input)==list):
+            output = pl.array([])
+            for i,j in enumerate(input):
+                if j%(2.0*pl.pi)<= pl.pi:
+                    output = pl.append(output,1.0)
+                if j%(2.0*pl.pi)> pl.pi:
+                    output = pl.append(output,-1.0)
+            print('square wave output: ' + str(output)) 
+
         return output
-    
+   
     # just make normal functions to try to pass into odeint function. Should be much faster
     def f(self,xarr,t):
         temp1 = 0.0
@@ -203,13 +210,20 @@ class MultiTwinECApxQuadPeriodic(object):
         self.diameter = num_cell*2.0*pl.pi
 
     def square_wave(self,input):
-        output = pl.array([])
-        for i,j in enumerate(input):
-            if j%(2.0*pl.pi)<= pl.pi:
-                output = pl.append(output,1.0)
-            if j%(2.0*pl.pi)> pl.pi:
-                output = pl.append(output,-1.0)
-        print('square wave output: ' + str(output)) 
+        if type(input)==float:
+            if input%(2.0*pl.pi)<= pl.pi:
+                output = 1.0
+            if input%(2.0*pl.pi)> pl.pi:
+                output = -1.0
+        if (type(input)==pl.ndarray)or(type(input)==list):
+            output = pl.array([])
+            for i,j in enumerate(input):
+                if j%(2.0*pl.pi)<= pl.pi:
+                    output = pl.append(output,1.0)
+                if j%(2.0*pl.pi)> pl.pi:
+                    output = pl.append(output,-1.0)
+            print('square wave output: ' + str(output)) 
+
         return output
 
 
