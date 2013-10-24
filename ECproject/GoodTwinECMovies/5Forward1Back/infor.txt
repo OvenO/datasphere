@@ -1,0 +1,10 @@
+N=6
+qq = 0.5
+A  = 3.0
+beta = 2.0
+quadA = 30.0
+d = pl.pi
+num_cell =6.0
+diameter = num_cell*2.0*pl.pi
+
+

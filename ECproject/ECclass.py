@@ -144,4 +144,117 @@ class TwinECApx(object):
         x2dot = xarr[0]
         x3dot = xarr[1]
         return [x0dot,x1dot,x2dot,x3dot]
+class MultiTwinECApxQuad(object):
+    def __init__(self,qq,A,beta,d,quadA):
+        self.qq = qq
+        self.A = A
+        self.quadA = quadA
+        self.d = d
+        self.beta = beta
+
+    def f(self,x,t):
+        # for now masses just = 1.0
+    
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+
+        print('x is: '+str(x))
+    
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC x force on particle i
+            temp += self.A*(pl.cos(t))*(-2*(pl.cosh(self.d-x[3*N+i]) + pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i])**2 - pl.cosh(self.d-x[3*N+i])*pl.cosh(x[3*N+i]))*pl.sin(x[2*N+i]))/((pl.cos(x[2*N+i]) - pl.cosh(self.d-x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i]))) -self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC y force on particle i
+            temp += self.A*(pl.cos(t))*(2*pl.cos(x[2*N+i])*(pl.sinh(self.d - x[3*N+i]) - pl.sinh(x[3*N+i]))*(-pl.sin(x[2*N+i])**2 + pl.sinh(self.d - x[3*N+i])*pl.sinh(x[3*N+i])))/((pl.cos(x[2*N+i]) - pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i])))-self.beta*x[N+i]
+            # quadropole restoring force to center of electric curtains
+            temp += -self.quadA*(pl.cos(50.0*t)+1.0)*(x[3*N+i]-self.d/2.0)
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i]) 
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+    
+        print('len xdot is: '+str(len(xdot)))
+        print('xdot is: '+str(xdot))
+        return xdot
+
+class MultiTwinECApxQuadPeriodic(object):
+    def __init__(self,qq,A,beta,d,quadA,num_cell):
+        self.qq = qq
+        self.A = A
+        self.quadA = quadA
+        self.d = d
+        self.beta = beta
+        self.num_cell = num_cell
+        self.diameter = num_cell*2.0*pl.pi
+
+    def square_wave(self,input):
+        output = pl.array([])
+        for i,j in enumerate(input):
+            if j%(2.0*pl.pi)<= pl.pi:
+                output = pl.append(output,1.0)
+            if j%(2.0*pl.pi)> pl.pi:
+                output = pl.append(output,-1.0)
+        print('square wave output: ' + str(output)) 
+        return output
+
+
+    def f(self,x,t):
+        # for now masses just = 1.0
+    
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+
+        # modulus the x component to keep periodicity right.
+        x[2*N:3*N]= x[2*N:3*N]%self.diameter
+    
+
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                temp += -self.qq*(self.diameter-(x[2*N+i]-x[2*N+j]))/(pl.sqrt((self.diameter-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC x force on particle i
+            temp += self.A*(self.square_wave(t))*(-2*(pl.cosh(self.d-x[3*N+i]) + pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i])**2 - pl.cosh(self.d-x[3*N+i])*pl.cosh(x[3*N+i]))*pl.sin(x[2*N+i]))/((pl.cos(x[2*N+i]) - pl.cosh(self.d-x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i]))) -self.beta*x[i]
+
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC y force on particle i
+            temp += self.A*(self.square_wave(t))*(2*pl.cos(x[2*N+i])*(pl.sinh(self.d - x[3*N+i]) - pl.sinh(x[3*N+i]))*(-pl.sin(x[2*N+i])**2 + pl.sinh(self.d - x[3*N+i])*pl.sinh(x[3*N+i])))/((pl.cos(x[2*N+i]) - pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i])))-self.beta*x[N+i]
+            # quadropole restoring force to center of electric curtains
+            temp += -self.quadA*(pl.cos(200.0*t)+0.1)*(x[3*N+i]-self.d/2.0)
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i]) 
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+
+    
+        return xdot
 
