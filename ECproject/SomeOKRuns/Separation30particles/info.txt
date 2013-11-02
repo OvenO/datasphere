@@ -1,0 +1,9 @@
+    # number of particles 20 works well for separation. 30 Takes a long time
+    N=20
+    qq = 0.3
+    beta = .6
+    # y periodicity
+    yd = 2.0*pl.pi
+    
+    half the particles had A of 1.0
+    half had A of 0.4

@@ -1,7 +1,13 @@
 #import pylab as pl
 from datetime import datetime
 import sys
+<<<<<<< HEAD
 import numpy as pl
+=======
+sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
+import scipy as pl
+from scipy.special import polygamma
+>>>>>>> 4fb0b9c6d43db1288498b91b033dc80eba9db09b
 import os
 
 # using the scipy odeint functions as a way of solving first order differential equations can be a
@@ -15,13 +21,321 @@ import os
 # the "t" in this case is the time array that we want our solution for. Find the youtube guy if you
 # forget what goes where. (nonlinear pendulub ex)
 
+class O_func(object):
+    '''O_func is just a way to acess comon functions across different classes. Or you can import
+    this to use them in other ways as well. These function may either take a list or a float or
+    pl.ndarray.'''
+    def square_wave(self,input):
+        if type(input)==float:
+            if input%(2.0*pl.pi)<= pl.pi:
+                output = 1.0
+            if input%(2.0*pl.pi)> pl.pi:
+                output = -1.0
+        if (type(input)==pl.ndarray)or(type(input)==list):
+            output = pl.array([])
+            for i,j in enumerate(input):
+                if j%(2.0*pl.pi)<= pl.pi:
+                    output = pl.append(output,1.0)
+                if j%(2.0*pl.pi)> pl.pi:
+                    output = pl.append(output,-1.0)
+            print('square wave output: ' + str(output)) 
+        return output
+
+
+class CentreLineApx(object):
+    def __init__(self,coef,k,w,drgCoef,surf,g,dt):
+        self.dt = dt
+        self.coef = coef
+        self.k = k
+        self.w = w
+        self.drg = drgCoef
+        self.surf = surf
+        self.g = g
+        self.sol = pl.array([])
+        self.square_wave = O_func.square_wave
+
+    def set_sol(self,sol):
+        self.sol=sol
+
+   
+    # just make normal functions to try to pass into odeint function. Should be much faster
+    def f(self,xarr,t):
+        temp1 = 0.0
+        temp2 = 0.0
+
+        # RIGHT NOW WE ARE LOOKING AT THE SQUARE WAVE VERSION. TO GO BACK TO NORMAL JUST REPLACE
+        # SELF.SQUAREWAVE WITH PL.COS. !!!!!!!!!!!!!!!!!!!!!!!!!
+    
+        for i in range(2):
+            temp1+=pl.sin(self.k*xarr[2]-i*pl.pi)*self.square_wave(self.w*t-i*pl.pi)/(pl.cosh(self.k*(self.surf+abs(xarr[3]-self.surf)))-pl.cos(self.k*xarr[2]-i*pl.pi)) 
+        temp1 = temp1*self.coef
+        temp1 -= self.drg*xarr[0]
+        x0dot = temp1
+        for i in range(2):
+            temp2+=pl.sign(xarr[3]-self.surf)*pl.sinh(self.k*(self.surf+abs(xarr[3]-self.surf)))*self.square_wave(self.w*t-i*pl.pi)/(pl.cosh(self.k*(self.surf+abs(xarr[3]-self.surf)))-pl.cos(self.k*xarr[2]-i*pl.pi)) 
+        temp2 = temp2*self.coef
+        temp2 -= self.drg*xarr[1]
+        temp2 -= pl.sign(xarr[3]-self.surf)*self.g
+        x1dot = temp2
+        x2dot = xarr[0]
+        x3dot = xarr[1]
+        return [x0dot,x1dot,x2dot,x3dot]
+
+# A is the dimensionless interaction amplitude
+# beta is the dimesionless damping
+class TwinECApx(object):
+    def __init__(self,interaction_amp,dimless_beta,dimless_dist_between_EC,dt):
+        self.dt = dt
+        self.A = interaction_amp
+        self.beta = dimless_beta
+        # distance between the two ECs for now just set to 2pi
+        # self.d = dimless_dist_between_EC
+        self.d = 2*pl.pi
+        self.sol = pl.array([])
+
+    def set_sol(self,sol):
+        self.sol=sol
+    
+    # just make normal functions to try to pass into odeint function. Should be much faster
+    def f(self,xarr,t):
+        x0dot = self.A*(pl.cos(t)+0.2)*(-2*(pl.cosh(self.d-xarr[3]) + pl.cosh(xarr[3]))*(pl.cos(xarr[2])**2 - pl.cosh(self.d-xarr[3])*pl.cosh(xarr[3]))*pl.sin(xarr[2]))/((pl.cos(xarr[2]) - pl.cosh(self.d-xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) - pl.cosh(xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(xarr[3])))- self.beta*xarr[0]
+        x1dot = self.A*(pl.cos(t)+0.2)*(2*pl.cos(xarr[2])*(pl.sinh(self.d - xarr[3]) - pl.sinh(xarr[3]))*(-pl.sin(xarr[2])**2 + pl.sinh(self.d - xarr[3])*pl.sinh(xarr[3])))/((pl.cos(xarr[2]) - pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) - pl.cosh(xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(xarr[3])))- self.beta*xarr[1]
+        x2dot = xarr[0]
+        x3dot = xarr[1]
+        return [x0dot,x1dot,x2dot,x3dot]
+
+class MultiTwinECApxQuad(object):
+    def __init__(self,qq,A,beta,d,quadA):
+        self.qq = qq
+        self.A = A
+        self.quadA = quadA
+        self.d = d
+        self.beta = beta
+
+    def f(self,x,t):
+    
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+
+        print('x is: '+str(x))
+    
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC x force on particle i
+            temp += self.A*(pl.cos(t))*(-2*(pl.cosh(self.d-x[3*N+i]) + pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i])**2 - pl.cosh(self.d-x[3*N+i])*pl.cosh(x[3*N+i]))*pl.sin(x[2*N+i]))/((pl.cos(x[2*N+i]) - pl.cosh(self.d-x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i]))) -self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC y force on particle i
+            temp += self.A*(pl.cos(t))*(2*pl.cos(x[2*N+i])*(pl.sinh(self.d - x[3*N+i]) - pl.sinh(x[3*N+i]))*(-pl.sin(x[2*N+i])**2 + pl.sinh(self.d - x[3*N+i])*pl.sinh(x[3*N+i])))/((pl.cos(x[2*N+i]) - pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(x[3*N+i])))-self.beta*x[N+i]
+            # quadropole restoring force to center of electric curtains
+            temp += -self.quadA*(pl.cos(50.0*t)+1.0)*(x[3*N+i]-self.d/2.0)
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i]) 
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+    
+        print('len xdot is: '+str(len(xdot)))
+        print('xdot is: '+str(xdot))
+        return xdot
+
+class MultiTwinECApxQuadPeriodic(object):
+    def __init__(self,qq,A,beta,d,quadA,num_cell):
+        self.qq = qq
+        self.A = A
+        self.quadA = quadA
+        self.d = d
+        self.beta = beta
+        self.num_cell = num_cell
+        self.diameter = num_cell*2.0*pl.pi
+        self.square_wave = O_func.square_wave
+
+    def f(self,x,t):
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+        # modulus the x component to keep periodicity right.
+        x[2*N:3*N]= x[2*N:3*N]%self.diameter
+
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                temp += -self.qq*(self.diameter-(x[2*N+i]-x[2*N+j]))/(pl.sqrt((self.diameter-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # could do this forever but for now just include one more of force going around in
+                # same direction as first. draw a diagam if you need to
+                temp += self.qq*(self.diameter+(x[2*N+i]-x[2*N+j]))/(pl.sqrt((self.diameter+(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC x force on particle i
+            temp += self.A*(self.square_wave(t))*(-2*(pl.cosh(self.d-x[3*N+i]) + \
+                pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i])**2 - \
+                    pl.cosh(self.d-x[3*N+i])*pl.cosh(x[3*N+i]))*pl.sin(x[2*N+i]))/((pl.cos(x[2*N+i])\
+                        - pl.cosh(self.d-x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - \
+                            x[3*N+i]))*(pl.cos(x[2*N+i]) - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + \
+                                pl.cosh(x[3*N+i]))) - self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((self.diameter-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC y force on particle i
+            temp += self.A*(self.square_wave(t))*(2*pl.cos(x[2*N+i])*(pl.sinh(self.d - x[3*N+i]) - \
+                pl.sinh(x[3*N+i]))*(-pl.sin(x[2*N+i])**2 + pl.sinh(self.d - \
+                    x[3*N+i])*pl.sinh(x[3*N+i])))/((pl.cos(x[2*N+i]) - pl.cosh(self.d - \
+                        x[3*N+i]))*(pl.cos(x[2*N+i]) + pl.cosh(self.d - x[3*N+i]))*(pl.cos(x[2*N+i]) \
+                            - pl.cosh(x[3*N+i]))*(pl.cos(x[2*N+i]) + \
+                                pl.cosh(x[3*N+i])))-self.beta*x[N+i] 
+            # quadropole restoring force to center of electric curtains
+            temp += -self.quadA*(pl.cos(200.0*t)+0.1)*(x[3*N+i]-self.d/2.0)
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i]) 
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+        return xdot
+
+# This only works for 1D
+class ExactPeriodic1D(object):
+   
+    def __init__(self,qq,As,beta,num_cell):
+        self.qq = qq
+        self.beta = beta
+        self.num_cell = num_cell
+        # d here is the length of the system
+        self.d = num_cell*2.0*pl.pi
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = As
+        self.square_wave = O_func.square_wave
+
+    def f(self,x,t):
+        N = len(x)/2
+        xdot = pl.array([])
+
+        # modulus the x for periodicity.
+        x[N:2*N]= x[N:2*N]%self.d
+        # HERE ---->> 1Dify
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[N+i]-x[N+j])/(pl.sqrt((x[N+i]-x[N+j])**2)**3)
+                # All of the forces coming from the 'same' paricle but from other 'cells' due to the
+                # periodic contrains can be wraped up in a sum that converges to an aswer that can
+                # be expressed in terms of polygamma functions (se pg 92 of notebook).
+                temp += self.qq*(polygamma(1,(self.d+x[N+i]-x[N+j])/self.d)-polygamma(1,1.0-((x[N+i]-x[N+j])/self.d)))/(self.d**2)
+            # EC x force on particle i
+            for a in range(2):
+                temp+=self.As[i]*pl.sin(x[N+i]-a*pl.pi)*pl.cos(t-a*pl.pi)/(pl.cosh(1.0)-pl.cos(x[N+i]-a*pl.pi)) 
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+
+    
+        return xdot
+
+class Flat2D(object):
+    def __init__(self,qq,As,beta,yd,num_cell,x_periodic,order):
+        self.qq = qq
+        self.beta = beta
+        self.num_cell = num_cell
+        self.yd = yd
+        self.xd = num_cell * 2.0*pl.pi
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = As
+        # do we want periodicity in x? This is a boolean.
+        self.x_periodic = x_periodic
+        # the order we want to go to as far as calculating periodic forces
+        self.order = order
+        self.square_wave = O_func.square_wave
+
+    def f(self,x,t):
+        # for now masses just = 1.0
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+        # modulus the y component to keep periodicity right.
+        x[3*N:4*N]= x[3*N:4*N]%self.yd
+        # x too
+        if self.x_periodic:
+            x[2*N:3*N]= x[2*N:3*N]%self.xd
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # if periodic in x we are going to need to include all the wrap around forces
+                if self.x_periodic:
+                    #repulsive y interparticle force of j on i
+                    temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                    for gama in range(self.order):
+                        temp += -self.qq*(gama*self.xd-(x[2*N+i]-x[2*N+j]))/(pl.sqrt((gama*self.xd-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                        temp += self.qq* (gama*self.xd+(x[2*N+i]-x[2*N+j]))/(pl.sqrt((gama*self.xd+(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # EC x force on particle i
+            # surface set to 1.0
+            for a in range(2):
+                temp+=self.As[i]*pl.sin(x[2*N+i]-a*pl.pi)*pl.cos(t-a*pl.pi)/(pl.cosh(1.0)-pl.cos(x[2*N+i]-a*pl.pi)) 
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                for gama in range(self.order):
+                    temp += -self.qq*(gama*self.yd-(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd-(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+                    temp += self.qq* (gama*self.yd+(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd+(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+            temp -= self.beta*x[N+i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+
+    
+        return xdot
+
 # for now I am going to include the "new type" of reflecting surface...This means I will switch the
 # sign of the y interactions but let the particle go below the plain of the surface. This is an
 # atempt at dealing with the discontinuity in the y velocity upon a reflection.
 
-# This is (at first) going to be used as a "normalized" equation of motion which in this case only means our lengths are
-# normalized (specificaly so surface can just be at 1 like in out 1D case). gravity is going to be the same old 9.8 and the multiplying coeficient is therefor
-# going to be whatever strange number makes things look nice hahah (Eeeee...) 
 class travPlaneChrgApx(object):
     # k should be less than 4189(inverse meters)
     # coef sould be less than 333
@@ -73,74 +387,5 @@ class surfCentreLineApx(object):
         x1dot = 0.0
         x2dot = xarr[0]
         x3dot = 0.0
-        return [x0dot,x1dot,x2dot,x3dot]
-class CentreLineApx(object):
-    def __init__(self,coef,k,w,drgCoef,surf,g,dt):
-        self.dt = dt
-        self.coef = coef
-        self.k = k
-        self.w = w
-        self.drg = drgCoef
-        self.surf = surf
-        self.g = g
-        self.sol = pl.array([])
-
-    def set_sol(self,sol):
-        self.sol=sol
-
-    def square_wave(input):
-        output = pl.array([])
-        for i,j in enumerate(input):
-            if j%(2.0*pl.pi)<= pl.pi:
-                output = pl.append(output,1.0)
-            if j%(2.0*pl.pi)> pl.pi:
-                output = pl.append(output,-1.0)
-                    
-        return output
-    
-    # just make normal functions to try to pass into odeint function. Should be much faster
-    def f(self,xarr,t):
-        temp1 = 0.0
-        temp2 = 0.0
-
-        # RIGHT NOW WE ARE LOOKING AT THE SQUARE WAVE VERSION. TO GO BACK TO NORMAL JUST REPLACE
-        # SELF.SQUAREWAVE WITH PL.COS. !!!!!!!!!!!!!!!!!!!!!!!!!
-    
-        for i in range(2):
-            temp1+=pl.sin(self.k*xarr[2]-i*pl.pi)*self.square_wave(self.w*t-i*pl.pi)/(pl.cosh(self.k*(self.surf+abs(xarr[3]-self.surf)))-pl.cos(self.k*xarr[2]-i*pl.pi)) 
-        temp1 = temp1*self.coef
-        temp1 -= self.drg*xarr[0]
-        x0dot = temp1
-        for i in range(2):
-            temp2+=pl.sign(xarr[3]-self.surf)*pl.sinh(self.k*(self.surf+abs(xarr[3]-self.surf)))*self.square_wave(self.w*t-i*pl.pi)/(pl.cosh(self.k*(self.surf+abs(xarr[3]-self.surf)))-pl.cos(self.k*xarr[2]-i*pl.pi)) 
-        temp2 = temp2*self.coef
-        temp2 -= self.drg*xarr[1]
-        temp2 -= pl.sign(xarr[3]-self.surf)*self.g
-        x1dot = temp2
-        x2dot = xarr[0]
-        x3dot = xarr[1]
-        return [x0dot,x1dot,x2dot,x3dot]
-
-# A is the dimensionless interaction amplitude
-# beta is the dimesionless damping
-class TwinECApx(object):
-    def __init__(self,interaction_amp,dimless_beta,dimless_dist_between_EC,dt):
-        self.dt = dt
-        self.A = interaction_amp
-        self.beta = dimless_beta
-        # distance between the two ECs for now just set to 2pi
-        # self.d = dimless_dist_between_EC
-        self.d = 2*pl.pi
-        self.sol = pl.array([])
-
-    def set_sol(self,sol):
-        self.sol=sol
-    
-    # just make normal functions to try to pass into odeint function. Should be much faster
-    def f(self,xarr,t):
-        x0dot = self.A*(pl.cos(t)+0.2)*(-2*(pl.cosh(self.d-xarr[3]) + pl.cosh(xarr[3]))*(pl.cos(xarr[2])**2 - pl.cosh(self.d-xarr[3])*pl.cosh(xarr[3]))*pl.sin(xarr[2]))/((pl.cos(xarr[2]) - pl.cosh(self.d-xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) - pl.cosh(xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(xarr[3])))- self.beta*xarr[0]
-        x1dot = self.A*(pl.cos(t)+0.2)*(2*pl.cos(xarr[2])*(pl.sinh(self.d - xarr[3]) - pl.sinh(xarr[3]))*(-pl.sin(xarr[2])**2 + pl.sinh(self.d - xarr[3])*pl.sinh(xarr[3])))/((pl.cos(xarr[2]) - pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(self.d - xarr[3]))*(pl.cos(xarr[2]) - pl.cosh(xarr[3]))*(pl.cos(xarr[2]) + pl.cosh(xarr[3])))- self.beta*xarr[1]
-        x2dot = xarr[0]
-        x3dot = xarr[1]
         return [x0dot,x1dot,x2dot,x3dot]
 

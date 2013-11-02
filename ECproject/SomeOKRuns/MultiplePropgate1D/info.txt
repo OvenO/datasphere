@@ -1,0 +1,9 @@
+    # number of particles
+    N=10
+    qq = 1.0
+    beta = .2
+    num_cell =11.0
+    d = num_cell * 2.0 * pl.pi
+
+    As = pl.zeros(2*N) + 1.0
+
