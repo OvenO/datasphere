@@ -1,8 +1,7 @@
 #import pylab as pl
 from datetime import datetime
 import sys
-sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
-import scipy as pl
+import numpy as pl
 import os
 
 # using the scipy odeint functions as a way of solving first order differential equations can be a
