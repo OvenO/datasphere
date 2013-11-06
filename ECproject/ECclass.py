@@ -1,13 +1,8 @@
-#import pylab as pl
 from datetime import datetime
 import sys
-<<<<<<< HEAD
-import numpy as pl
-=======
 sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
 import scipy as pl
 from scipy.special import polygamma
->>>>>>> 4fb0b9c6d43db1288498b91b033dc80eba9db09b
 import os
 
 # using the scipy odeint functions as a way of solving first order differential equations can be a
@@ -40,6 +35,48 @@ class O_func(object):
                     output = pl.append(output,-1.0)
             print('square wave output: ' + str(output)) 
         return output
+
+
+class Sin1D(object):
+   
+    def __init__(self,rad,A,beta,num_cell):
+        # radius of particles
+        self.rad = rad
+        self.beta = beta
+        self.num_cell = num_cell
+        # d here is the length of the system
+        self.d = num_cell*2.0*pl.pi
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.A = A
+
+    def f(self,x,t):
+        N = len(x)/2
+        xdot = pl.array([])
+
+        # modulus the x for periodicity.
+        x[N:2*N]= x[N:2*N]%self.d
+        # HERE ---->> 1Dify
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[N+i]-x[N+j])/(pl.sqrt((x[N+i]-x[N+j])**2)**3)
+                # All of the forces coming from the 'same' paricle but from other 'cells' due to the
+                # periodic contrains can be wraped up in a sum that converges to an aswer that can
+                # be expressed in terms of polygamma functions (se pg 92 of notebook).
+                temp += self.qq*(polygamma(1,(self.d+x[N+i]-x[N+j])/self.d)-polygamma(1,1.0-((x[N+i]-x[N+j])/self.d)))/(self.d**2)
+            # periodic force on particle i
+            temp+=self.A*pl.sin(x[N+i])*pl.cos(t)
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        return xdot
 
 
 class CentreLineApx(object):

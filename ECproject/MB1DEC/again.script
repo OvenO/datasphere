@@ -2,7 +2,7 @@
 # This job needs 1 compute node with 1 processor per node.
 #PBS -l nodes=1:ppn=1
 # It should be allowed to run for up to x hour.
-#PBS -l walltime=30:00:00
+#PBS -l walltime=10:00:00
 # Name of job.
 #PBS -N again1D
 # Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
@@ -20,12 +20,14 @@
 mkdir /tmp/$DIR$PBS_ARRAYID
 cp /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/$PBS_ARRAYID'poindat.txt' /tmp/$DIR$PBS_ARRAYID/
 cp /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/'info.txt' /tmp/$DIR$PBS_ARRAYID/
-cd /users/o/m/omyers/datasphere/ECproject/1DEC
+cd /users/o/m/omyers/datasphere/ECproject/MB1DEC
 echo 'This is myjob running on ' `hostname`
 #export dir="Block_Thu_Jun_13_090216_2013_"
 echo 'This is the dir ' $DIR
 # SLICED has the string value 'Poin' or 'Full' indicating weather or not we want the full solution
 # or just the poincare sections
 python again.py --file $PBS_ARRAYID --dir $DIR --sliced $SLICED --totiter $TOTITER 
+wait
+rm /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/$PBS_ARRAYID'poindat.txt'
 
 

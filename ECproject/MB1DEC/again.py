@@ -31,6 +31,9 @@ def get_init_arr(lines):
     return arr, (abs(count)-1)
 
 def main():
+
+    #start_time=datetime.now() 
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', action = 'store', dest = "dir",type = str,required = True)
     parser.add_argument('--file', action = 'store', dest = "file",type = int,required = True)
@@ -63,57 +66,103 @@ def main():
     # trying to use /tmp folder to speed things up
     info_file = open("/tmp/"+dir+str(inargs.file)+"/info.txt","r")
     lns = info_file.readlines()
+    print('info lines: '+str(lns))
+    for i,j in enumerate(lns):
+        if 'sweep var' in j:
+            print('found sweep variable in info file')
+            var_str = j.split()[0]
+            print('var_str is: '+str(var_str))
+    info_file.close()
 
-    # Number of particles
-    N = float(lns[3].split()[-1])
+    # open the file we are working with
+    cur_file = open("/tmp/"+dir+str(inargs.file)+"/"+file,"r")
+    # get the line with the variable value we are doing the run with
+    var_line = cur_file.readline()
+    print('var_line is: ' + var_line)
+
     # because we want to be able to sweep over many different variables we need to just reference
     # the general variable NOT being changed -> the one that is being changed is documented in the
     # first line of the actual data files.
-    # we have aslo made it so the variable name and the number are on the same line. the split()[-1]
-    dt = float(lns[2].split()[-1])
+    if var_str!='surf':
+        surf= float(lns[1].split()[-1])
+        print('surf: '+str(surf))
+    else: 
+        beta = float(var_line.split()[-1])
+
+    if var_str!='dt':
+        dt= float(lns[2].split()[-1])
+        print('dt: '+str(dt))
+    else: 
+        beta = float(var_line.split()[-1])
+
+    if var_str!='beta':
+        beta = float(lns[3].split()[-1])
+        print('beta: '+str(beta))
+    else: 
+        beta = float(var_line.split()[-1])
+        
+    if var_str!='cycles':
+        cycles = float(lns[4].split()[-1])
+        print('cycles: '+str(cycles))
+    else:
+        cycles = float(var_line.split()[-1])
+
+    if var_str!='N':
+        N = float(lns[5].split()[-1])
+        print('N: '+str(N))
+    else:
+        N = float(var_line.split()[-1])
+
     # particle particle interaction stregth
-    qq = float(lns[4].split()[-1])
+    if var_str!='qq':
+        qq = float(lns[6].split()[-1])
+        print('qq: '+str(qq))
+    else:
+        qq = float(var_line.split()[-1])
+
     # number of unit cells till periodicity
-    num_cell = float(lns[6].split()[-1])
-    # how many cells is till periodicity use x = n*pi/k (n must be even #)
-    modNum = 2*pl.pi*num_cell
+    if var_str!='num_cell':
+        num_cell = float(lns[7].split()[-1])
+        print('num_cell: '+str(num_cell))
+    else:
+        num_cell = float(var_line.split()[-1])
+    if var_str!='A':
+        A = float(lns[8].split()[-1])
+        print('A: '+str(A))
+    else:
+        A = float(var_line.split()[-1])
+
+    # for now
+    As = pl.zeros(N) + A
+
+    modNum = 2.0*pl.pi*num_cell
     totTime = totIter*dt
-    print("number of unit cells is: "+str(num_cell))
     print("dt is: " + str(dt))
     print("totTime is: "+str(totTime))
 
     time = pl.arange(0.0,totTime,dt)
 
-
     # try /tmp/ folder
     os.chdir("/tmp/"+dir+str(inargs.file))
     #os.chdir(os.path.expanduser("~/Data/EC/2DBlock/Old/"+dir))
     
-    # open the file we are working with
-    cur_file = open(file,"r")
-    # get the line with the variable value we are doing the run with
-    var_line = cur_file.readline()
-    # Here we need to determine which it is so we can pass the right variables into the function
-    if lns[1].split()[0] == "A:":
-        As = pl.zerros(N) + float(lns[1].split()[-1])
-        beta = float(var_lines[0].split()[-1])
-    if lns[1].split()[0] == "beta:":
-        beta = float(lns[1].split()[-1])
-        As = pl.zerros(N) + float(var_lines[0].split()[-1])
     # get all the initial conditions we age going to do we will be using the formating that is:
     # 0-N -> velx  ex) with 10 particles arr[3] would be the 3rd particles velocity
     # N-2*N -> x
-    init = pl.genfromtxt(file) 
+    init = pl.genfromtxt(cur_file) 
     cur_file.close()
 
     # re open to append solution, we don't need to append, we just eed to write the whole soluton
     cur_file = open(file,"w")
+    cur_file.write(var_line)
     
     apx = ec.ExactPeriodic1D(qq,As,beta,num_cell)
     
-    # this line makes it so that if we want to run again after we have already run then we can. This
+    # this statment makes it so that if we want to run again after we have already run then we can. This
     # grabs the last line to use as the first initial conditions
-    x0 = init[-1,:]
+    if len(pl.shape(init))>1: 
+        x0 = init[-1,:]
+    else: x0 = init
     
     sol = odeint(apx.f,x0,time)
 
@@ -125,12 +174,22 @@ def main():
             if(((a*dt)%(2.0*pl.pi))<dt):
                 # str(sol)[1,-1] gets rid of the '[' and ']' at the begining and end of the array
                 # when it is turned into a string.
-                cur_file.write(str(sol[a,:])[1,-1])
+                cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+                cur_file.write('\n')
     else:
         for a in range(len(sol[:,0])):
-            cur_file.write(str(sol[a,:])[1,-1])
+            cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+            cur_file.write('\n')
+
+    cur_file.close()
 
 
+    #print (datetime.now() - start_time)
+
+    os.system('gzip /tmp/'+dir+str(inargs.file)+'/'+file)
+    os.system('cp /tmp/'+dir+str(inargs.file)+'/'+file+'.gz /users/o/m/omyers/Data/EC/2DBlock/Old/'+dir+'/'+file+'.gz')
+    os.system('rm -r /tmp/'+dir+str(inargs.file))
+    
         
 if __name__ == '__main__':
     main()
