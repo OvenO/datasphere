@@ -12,8 +12,8 @@ def main():
     # do we want real space images
     make_real = True
     # number of particles
-    N=8
-    qq = 1.0
+    N=20
+    qq = .05
     beta = 1.0
     num_cell =5.0
     d = num_cell * 2.0 * pl.pi
@@ -32,7 +32,7 @@ def main():
             x0[i] = random.random()*d
             continue
 
-    t = pl.arange(0,70,.07)
+    t = pl.arange(0,50,.07)
     
     elec = ec.ExactPeriodic1D(qq,As,beta,num_cell)
     

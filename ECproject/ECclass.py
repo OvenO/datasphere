@@ -5,6 +5,18 @@ import scipy as pl
 from scipy.special import polygamma
 import os
 
+# List of classes and 1-2 word descriptions:
+# class Sin1D(object):
+# class CentreLineApx(object):
+# class TwinECApx(object):
+# class MultiTwinECApxQuad(object):
+# class MultiTwinECApxQuadPeriodic(object):
+# class ExactPeriodic1D(object):
+# class Flat2D(object):
+# class travPlaneChrgApx(object):
+# class surfTravPlaneChrgApx(object):
+# class surfCentreLineApx(object):
+
 # using the scipy odeint functions as a way of solving first order differential equations can be a
 # little confusing so here are some notes:
 # first of all the new array structure being passed back and forth for a full location in phase
