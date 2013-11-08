@@ -13,7 +13,7 @@ def main():
     make_real = True
     # number of particles
     N=20
-    qq = .05
+    qq = .01
     beta = 1.0
     num_cell =5.0
     d = num_cell * 2.0 * pl.pi

@@ -7,6 +7,7 @@ import os
 
 # List of classes and 1-2 word descriptions:
 # class Sin1D(object):
+# class HardCoreSin1D(object):
 # class CentreLineApx(object):
 # class TwinECApx(object):
 # class MultiTwinECApxQuad(object):
@@ -51,18 +52,18 @@ class O_func(object):
 
 class Sin1D(object):
    
-    def __init__(self,rad,A,beta,num_cell):
-        # radius of particles
-        self.rad = rad
+    def __init__(self,qq,As,beta,num_cell):
+        self.qq = qq
         self.beta = beta
         self.num_cell = num_cell
         # d here is the length of the system
         self.d = num_cell*2.0*pl.pi
+        print('slef.d: ' +str(self.d))
         # right now As is only different becasue of different particle "densities". The reason I
         # have stated it like this is because particles with different chages would then need the qq
         # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
         # particle separation with the As method
-        self.A = A
+        self.As = As
 
     def f(self,x,t):
         N = len(x)/2
@@ -83,7 +84,46 @@ class Sin1D(object):
                 # be expressed in terms of polygamma functions (se pg 92 of notebook).
                 temp += self.qq*(polygamma(1,(self.d+x[N+i]-x[N+j])/self.d)-polygamma(1,1.0-((x[N+i]-x[N+j])/self.d)))/(self.d**2)
             # periodic force on particle i
-            temp+=self.A*pl.sin(x[N+i])*pl.cos(t)
+            temp += self.As[i]*pl.sin(x[N+i])*pl.cos(t)
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        return xdot
+
+class HardCoreSin1D(object):
+   
+    def __init__(self,rad,As,beta,num_cell,spring):
+        # particle radius
+        self.rad = rad
+        self.beta = beta
+        self.num_cell = num_cell
+        # d here is the length of the system
+        self.d = num_cell*2.0*pl.pi
+        print('slef.d: ' +str(self.d))
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = As
+        # spring constant of particles squishieness
+        self.spring = spring
+
+    def f(self,x,t):
+        N = len(x)/2
+        xdot = pl.array([])
+
+        # modulus the x for periodicity.
+        x[N:2*N]= x[N:2*N]%self.d
+        # HERE ---->> 1Dify
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i==j: continue
+                if abs(x[N+i]-x[N+j])<2.0*self.rad:
+                    temp += (x[N+i]-x[N+j])*self.spring
+
+            temp += self.As[i]*pl.sin(x[N+i])*pl.cos(t)
             temp -= self.beta*x[i]
             xdot = pl.append(xdot,temp)
         for i in range(N):
