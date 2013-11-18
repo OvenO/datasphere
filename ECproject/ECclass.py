@@ -6,6 +6,7 @@ from scipy.special import polygamma
 import os
 
 # List of classes and 1-2 word descriptions:
+# class SinSin2D(object):
 # class Sin1D(object):
 # class HardCoreSin1D(object):
 # class CentreLineApx(object):
@@ -49,6 +50,73 @@ class O_func(object):
             print('square wave output: ' + str(output)) 
         return output
 
+class SinSin2D(object):
+    def __init__(self,qq,As,beta,x_num_cell,y_num_cell,x_periodic,order):
+        self.qq = qq
+        self.beta = beta
+        self.x_num_cell = x_num_cell
+        self.y_num_cell = y_num_cell
+        self.yd = self.y_num_cell * 2.0*pl.pi
+        self.xd = self.x_num_cell * 2.0*pl.pi
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = As
+        # do we want periodicity in x? This is a boolean.
+        self.x_periodic = x_periodic
+        # the order we want to go to as far as calculating periodic forces
+        self.order = order
+        self.square_wave = O_func.square_wave
+
+    def f(self,x,t):
+        # for now masses just = 1.0
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+        # modulus the y component to keep periodicity right.
+        x[3*N:4*N]= x[3*N:4*N]%self.yd
+        # x too
+        if self.x_periodic:
+            x[2*N:3*N]= x[2*N:3*N]%self.xd
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[2*N+i]-x[2*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # if periodic in x we are going to need to include all the wrap around forces
+                if self.x_periodic:
+                    for gama in range(self.order):
+                        temp += -self.qq*(gama*self.xd-(x[2*N+i]-x[2*N+j]))/(pl.sqrt((gama*self.xd-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                        temp += self.qq* (gama*self.xd+(x[2*N+i]-x[2*N+j]))/(pl.sqrt((gama*self.xd+(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)**3)
+            # sin(x)cos(t) force on particle i
+            temp+=self.As[i]*pl.sin(x[2*N+i])*pl.cos(t)
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                temp += self.qq*(x[3*N+i]-x[3*N+j])/(pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)**3)
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                for gama in range(self.order):
+                    temp += -self.qq*(gama*self.yd-(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd-(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+                    temp += self.qq* (gama*self.yd+(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd+(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+            # sin(y)cos(t) force on particle i
+            temp+=self.As[i]*pl.sin(x[3*N+i])*pl.cos(t)
+            temp -= self.beta*x[N+i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+
+        return xdot
 
 class Sin1D(object):
    
