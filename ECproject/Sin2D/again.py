@@ -127,24 +127,26 @@ def main():
     else:
         x_num_cell = float(var_line.split()[-1])
     if var_str!='y_num_cell':
-        y_num_cell = float(lns[7].split()[-1])
+        y_num_cell = float(lns[8].split()[-1])
         print('y_num_cell: '+str(y_num_cell))
     else:
         y_num_cell = float(var_line.split()[-1])
-    if var_str!='order':
-        order = int(lns[7].split()[-1])
-        print('order: '+str(order))
-    else:
-        order = float(var_line.split()[-1])
 
     if var_str!='x_periodic':
-        x_periodic = float(lns[7].split()[-1])
+        x_periodic = bool(lns[9].split()[-1])
         print('x_periodic: '+str(x_periodic))
     else:
         x_periodic = float(var_line.split()[-1])
 
+    if var_str!='order':
+        order = int(lns[10].split()[-1])
+        print('order: '+str(order))
+    else:
+        order = float(var_line.split()[-1])
+
+
     if var_str!='A':
-        A = float(lns[8].split()[-1])
+        A = float(lns[11].split()[-1])
         print('A: '+str(A))
     else:
         A = float(var_line.split()[-1])
