@@ -132,7 +132,7 @@ def main():
     else:
         y_num_cell = float(var_line.split()[-1])
     if var_str!='order':
-        order = float(lns[7].split()[-1])
+        order = int(lns[7].split()[-1])
         print('order: '+str(order))
     else:
         order = float(var_line.split()[-1])
