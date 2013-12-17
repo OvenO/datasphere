@@ -6,6 +6,7 @@ from scipy.special import polygamma
 import os
 
 # List of classes and 1-2 word descriptions:
+# class Test(object): see if we can reproduce Molucular Dynamics results from computational book
 # class SinSin2D(object):
 # class Sin1D(object):
 # class HardCoreSin1D(object):
@@ -49,6 +50,71 @@ class O_func(object):
                     output = pl.append(output,-1.0)
             print('square wave output: ' + str(output)) 
         return output
+
+class Test(object):
+    
+    def __init__(self,xd,yd):
+        self.sigma = 1.0
+        self.epsilon = 1.0
+        self.order = 3
+        self.xd = xd
+        self.yd = xd
+        # find initial conditions. Put on grid and then displace by half the lattice constant.
+        
+
+    def f(self,x,t):
+        # for now masses just = 1.0
+        # the 4.0 only works for 2D
+        N = len(x)/4
+        xdot = pl.array([])
+        # modulus the y component to keep periodicity right.
+        x[3*N:4*N]= x[3*N:4*N]%self.yd
+        # x too
+        x[2*N:3*N]= x[2*N:3*N]%self.xd
+
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)
+                temp += (x[2*N+i]-x[2*N+j])/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+                # if periodic in x we are going to need to include all the wrap around forces
+                for gama in range(self.order):
+                    r_temp = pl.sqrt((gama*self.xd-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)
+                    temp += -(gama*self.xd-(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+                    r_temp = pl.sqrt((gama*self.xd+(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)
+                    temp += (gama*self.xd+(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+            #temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive y interparticle force of j on i
+                r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)
+                temp += (x[3*N+i]-x[3*N+j])/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+                # force from same particle but in other direction becasue of periodic boundar
+                # conditions
+                for gama in range(self.order):
+                    r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(gama*self.yd-(x[3*N+i]-x[3*N+j]))**2)
+                    temp += -(gama*self.yd-(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+                    r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(gama*self.yd+(x[3*N+i]-x[3*N+j]))**2)
+                    temp += (gama*self.yd+(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+
+                    #temp += -self.qq*(gama*self.yd-(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd-(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+                    #temp += self.qq* (gama*self.yd+(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd+(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
+            #temp -= self.beta*x[N+i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        for i in range(N):
+            xdot = pl.append(xdot,x[N+i])
+
+        return xdot
+
 
 class SinSin2D(object):
     def __init__(self,qq,As,beta,x_num_cell,y_num_cell,x_periodic,order):

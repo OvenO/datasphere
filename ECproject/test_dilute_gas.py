@@ -17,72 +17,65 @@ def main():
     # just a last bit of the phase space plot (single plot)
     make_lphase = False
     # number of particles
-    N=5
-    qq = .5
-    beta = .6
-    x_num_cell =1.0
-    y_num_cell =1.0
-    xd = x_num_cell * 2.0 * pl.pi
-    yd = y_num_cell * 2.0 * pl.pi
+    N=20
+    #beta = .6
+    xd = 10.0
+    yd =10.0
 
-    As = pl.zeros(2*N) + .75
-    #As = pl.zeros(N/2)+.8
-    #As = pl.append(As,pl.zeros(N/2)+.4)
-
-    t = pl.arange(0,110,.05)
-    #t = pl.arange(0,140,.1)
-
-    # do we want x to be periodic
-    x_periodic =True
-
-    # order to which we are going to calculate the periodic inter particle forces
-    order = 5
+    delta_x = xd/4.0
+    delta_y = yd/5.0
+    
+    t = pl.arange(0,10,.05)
 
     x0 = pl.zeros([4*N])
 
     some_colors = ['b','c','g','k','r','y','b','c','g','k','r','y','b','c','g','k','r','y']
     # random positions
-    for i,j in enumerate(x0):
-        if i in range(2*N,3*N):
-            print(i)
-            x0[i] = random.random()*xd
-            continue
-        if i in range(3*N,4*N):
-            print(i)
-            x0[i] = random.random()*yd
-            continue
+    # first arange in a square latice and then displace by a 4th the separatoin
+    # Lets just do this for the 20 particles
+    # x position
+    for i in range(N):
+        x0[2*N+i] = delta_x/2.0 + delta_x*(i%4) + delta_x/2.0*(random.random()-.5)
+    count = 0
+    for i in range(N):
+        if i%4==0 and i>0: count +=1
+        x0[3*N+i] = delta_y/2.0 + delta_y*(count) + delta_y/2.0*(random.random()-.5)
+    for i in range(N):
+        # each particle starts with vel magnitude 1 in random direction
+        random_angle = 2.0*pl.pi*random.random()
+        # x_vel
+        x0[i]= pl.cos(random_angle)
+        # y_vel
+        x0[i+N]= pl.sin(random_angle)
 
-    # random everythin
-    #for i,j in enumerate(x0):
-    #    if i in range(2*N,3*N):
-    #        print(i)
-    #        x0[i] = random.random()*xd
-    #        continue
-    #    if i in range(3*N,4*N):
-    #        print(i)
-    #        x0[i] = random.random()*yd
-    #        continue
-    #    if i in range(N):
-    #        x0[i] = random.random()*2.0
-    #        continue
-    #    if i in range(N,2*N):
-    #        x0[i] = random.random()*2.0
-    #        continue
-
-    # for testing with N=2
-    #x0[0] = .5
-    #x0[1] = 0.0
-    #x0[2] = 0.0
-    #x0[3] = 0.0
-    #x0[4] = .5
-    #x0[5] = 1.0
-    #x0[6] = 1.0
-    #x0[7] = 1.0
-
+    pl.scatter(x0[2*N:3*N],x0[3*N:4*N])
+    pl.show()
+ 
     
-    elec = ec.SinSin2D(qq,As,beta,x_num_cell,y_num_cell,x_periodic,order)
+    elec = ec.Test(xd,yd)
     
     sol = odeint(elec.f,x0,t)
+    
+#    cur_file = open('cur_run_data'
+#    # modulus the x positions so they are in the right spot
+#    sol[:,2*N:3*N] = sol[:,2*N:3*N]%x_modNum
+#    # modulus the x positions so they are in the right spot
+#    sol[:,3*N:4*N] = sol[:,3*N:4*N]%y_modNum
+#    
+#    if sliced:
+#        for a in range(len(sol[:,0])):
+#            if(((a*dt)%(2.0*pl.pi))<dt):
+#                # str(sol)[1,-1] gets rid of the '[' and ']' at the begining and end of the array
+#                # when it is turned into a string.
+#                cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+#                cur_file.write('\n')
+#    else:
+#        for a in range(len(sol[:,0])):
+#            cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+#            cur_file.write('\n')
+#
+#    cur_file.close()
+
 
     os.mkdir('RunImages')
     if make_phase:
