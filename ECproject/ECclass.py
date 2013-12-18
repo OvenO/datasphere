@@ -627,8 +627,7 @@ class One_Particle_Ensble_Sin1D(object):
    
     # just make normal functions to try to pass into odeint function. Should be much faster
     def f(self,xarr,t):
-        x0dot = self.A*pl.sin(xarr[2])*pl.cos(t) temp - self.beta*xarr[0]
-        x0dot = temp
+        x0dot = self.A*pl.sin(xarr[2])*pl.cos(t) - self.beta*xarr[0]
         x1dot = 0.0
         x2dot = xarr[0]
         x3dot = 0.0
