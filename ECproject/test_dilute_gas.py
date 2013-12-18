@@ -8,7 +8,7 @@ import shutil
 
 def main():
     # skip ploting some so it is faster to watch
-    skip = 3
+    skip = 5
     
     # do we want phase space imaes
     make_phase = False
@@ -25,7 +25,7 @@ def main():
     delta_x = xd/4.0
     delta_y = yd/5.0
     
-    t = pl.arange(0,10,.05)
+    t = pl.arange(0,20,.02)
 
     x0 = pl.zeros([4*N])
 
@@ -48,8 +48,8 @@ def main():
         # y_vel
         x0[i+N]= pl.sin(random_angle)
 
-    pl.scatter(x0[2*N:3*N],x0[3*N:4*N])
-    pl.show()
+#    pl.scatter(x0[2*N:3*N],x0[3*N:4*N])
+#    pl.show()
  
     
     elec = ec.Test(xd,yd)

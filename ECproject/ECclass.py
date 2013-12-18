@@ -9,6 +9,7 @@ import os
 # class Test(object): see if we can reproduce Molucular Dynamics results from computational book
 # class SinSin2D(object):
 # class Sin1D(object):
+# class One_Particle_Ensble_Sin1D(object):
 # class HardCoreSin1D(object):
 # class CentreLineApx(object):
 # class TwinECApx(object):
@@ -56,7 +57,7 @@ class Test(object):
     def __init__(self,xd,yd):
         self.sigma = 1.0
         self.epsilon = 1.0
-        self.order = 3
+        self.order = 2
         self.xd = xd
         self.yd = xd
         # find initial conditions. Put on grid and then displace by half the lattice constant.
@@ -606,6 +607,27 @@ class surfCentreLineApx(object):
             temp+=pl.sin(self.k*xarr[2]-i*pl.pi)*pl.cos(self.w*t-i*pl.pi)/(pl.cosh(self.k*xarr[3])-pl.cos(self.k*xarr[2]-i*pl.pi)) 
         temp = temp*self.coef
         temp -= self.drg*xarr[0]
+        x0dot = temp
+        x1dot = 0.0
+        x2dot = xarr[0]
+        x3dot = 0.0
+        return [x0dot,x1dot,x2dot,x3dot]
+class One_Particle_Ensble_Sin1D(object):
+    def __init__(self,A,beta):
+        self.beta = beta
+        self.num_cell = num_cell
+        # d here is the length of the system
+        self.d = num_cell*2.0*pl.pi
+        print('slef.d: ' +str(self.d))
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = A
+   
+    # just make normal functions to try to pass into odeint function. Should be much faster
+    def f(self,xarr,t):
+        x0dot = self.A*pl.sin(xarr[2])*pl.cos(t) temp - self.beta*xarr[0]
         x0dot = temp
         x1dot = 0.0
         x2dot = xarr[0]
