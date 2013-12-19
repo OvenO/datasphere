@@ -127,10 +127,9 @@ def main():
                         num_ts += 1
         else:
             all_poin = pl.append(all_poin,sol)
-            num_ts += len(sol)
+            num_ts += len(time)
 
 
-    num_ts = len(time)
     # Now reshape all_poin and put it in the file corectly 
     print("p_num is: " +str(p_num))
     print("num_ts is: "+ str(num_ts))
