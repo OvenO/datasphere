@@ -614,6 +614,8 @@ class surfCentreLineApx(object):
         return [x0dot,x1dot,x2dot,x3dot]
 class One_Particle_Ensble_Sin1D(object):
     def __init__(self,A,beta):
+        self.A = A
+        print('self.A is: ' + str(self.A))
         self.beta = beta
         print('self.beta is: '+str(self.beta))
         self.num_cell = 1.0
