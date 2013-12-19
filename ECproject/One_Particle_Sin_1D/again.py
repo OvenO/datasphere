@@ -129,9 +129,8 @@ def main():
                         num_ts += 1 
         else: 
             all_poin = pl.append(all_poin,sol)
-            num_ts += len(sol)
 
-
+    num_ts = len(time)
     # Now reshape all_poin and put it in the file corectly 
     print("p_num is: " +str(p_num))
     print("num_ts is: "+ str(num_ts))
@@ -147,7 +146,6 @@ def main():
         # I think we are reversing the order of the points in a PC section so I'm going to try to
         # write the file backwards (this the strange indexing and the -b).
         for b in range(1,p_num+1):
-            print('b is: ' +str(b))
             # add the first particles solution to the data file
             toadd = "%15.6f %15.6f %15.6f %15.6f"%(all_poin[-b,a,0],all_poin[-b,a,1],all_poin[-b,a,2],all_poin[-b,a,3])
             toadd += "\n"
