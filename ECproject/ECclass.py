@@ -615,7 +615,7 @@ class surfCentreLineApx(object):
 class One_Particle_Ensble_Sin1D(object):
     def __init__(self,A,beta):
         self.beta = beta
-        self.num_cell = num_cell
+        self.num_cell = 2.0*pl.pi
         # d here is the length of the system
         self.d = num_cell*2.0*pl.pi
         print('slef.d: ' +str(self.d))
