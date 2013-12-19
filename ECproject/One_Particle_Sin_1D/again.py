@@ -147,6 +147,7 @@ def main():
         # I think we are reversing the order of the points in a PC section so I'm going to try to
         # write the file backwards (this the strange indexing and the -b).
         for b in range(1,p_num+1):
+            print('b is: ' +str(b))
             # add the first particles solution to the data file
             toadd = "%15.6f %15.6f %15.6f %15.6f"%(all_poin[-b,a,0],all_poin[-b,a,1],all_poin[-b,a,2],all_poin[-b,a,3])
             toadd += "\n"
