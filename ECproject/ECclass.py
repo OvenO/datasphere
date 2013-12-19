@@ -615,9 +615,10 @@ class surfCentreLineApx(object):
 class One_Particle_Ensble_Sin1D(object):
     def __init__(self,A,beta):
         self.beta = beta
-        self.num_cell = 2.0*pl.pi
+        print('self.beta is: '+str(self.beta))
+        self.num_cell = 1.0
         # d here is the length of the system
-        self.d = num_cell*2.0*pl.pi
+        self.d = self.num_cell*2.0*pl.pi
         print('slef.d: ' +str(self.d))
         # right now As is only different becasue of different particle "densities". The reason I
         # have stated it like this is because particles with different chages would then need the qq
