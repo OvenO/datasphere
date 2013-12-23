@@ -112,7 +112,7 @@ def main():
     #print("len(init) : " + str(len(init[:,0])))
     for i in xrange(p_num):
 
-        apx = ec.One_Particle_Ensble_Sin1D(A,beta)
+        apx = ec.One_Particle_Ensble_Sin2D(A,beta)
         # itial conditions to next point
         x0 = init[i,:]
 
