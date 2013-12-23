@@ -9,6 +9,7 @@ import shutil
 def main():
     # skip ploting some so it is faster to watch
     skip = 5
+    sliced = False
     
     # do we want phase space imaes
     make_phase = False
@@ -17,7 +18,7 @@ def main():
     # just a last bit of the phase space plot (single plot)
     make_lphase = False
     # number of particles
-    N=20
+    N=10
     #beta = .6
     xd = 10.0
     yd =10.0
@@ -25,7 +26,8 @@ def main():
     delta_x = xd/4.0
     delta_y = yd/5.0
     
-    t = pl.arange(0,20,.02)
+    dt = .02
+    t = pl.arange(0,5,dt)
 
     x0 = pl.zeros([4*N])
 
@@ -50,31 +52,43 @@ def main():
 
 #    pl.scatter(x0[2*N:3*N],x0[3*N:4*N])
 #    pl.show()
- 
+    
+    # make info file 
+    inff = open('info.txt','w')
+    inff.write('dir: here\n')
+    inff.write('dt: '+str(dt)+'\n')
+    inff.write('beta: 0.0\n')
+    inff.write('qq: 0.0\n')
+    inff.write('x_num_cell: 1.0\n')
+    inff.write('y_num_cell: 1.0\n')
+    inff.write('A: sweep variable\n')
+    inff.write('cycles: 0\n')
+    inff.write('particle number: '+str(N))
+    inff.close()
     
     elec = ec.Test(xd,yd)
     
     sol = odeint(elec.f,x0,t)
     
-#    cur_file = open('cur_run_data'
-#    # modulus the x positions so they are in the right spot
-#    sol[:,2*N:3*N] = sol[:,2*N:3*N]%x_modNum
-#    # modulus the x positions so they are in the right spot
-#    sol[:,3*N:4*N] = sol[:,3*N:4*N]%y_modNum
-#    
-#    if sliced:
-#        for a in range(len(sol[:,0])):
-#            if(((a*dt)%(2.0*pl.pi))<dt):
-#                # str(sol)[1,-1] gets rid of the '[' and ']' at the begining and end of the array
-#                # when it is turned into a string.
-#                cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
-#                cur_file.write('\n')
-#    else:
-#        for a in range(len(sol[:,0])):
-#            cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
-#            cur_file.write('\n')
-#
-#    cur_file.close()
+    cur_file = open('cur_run_data.txt','w')
+    # modulus the x positions so they are in the right spot
+    sol[:,2*N:3*N] = sol[:,2*N:3*N]%xd
+    # modulus the x positions so they are in the right spot
+    sol[:,3*N:4*N] = sol[:,3*N:4*N]%yd
+    
+    if sliced:
+        for a in range(len(sol[:,0])):
+            if(((a*dt)%(2.0*pl.pi))<dt):
+                # str(sol)[1,-1] gets rid of the '[' and ']' at the begining and end of the array
+                # when it is turned into a string.
+                cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+                cur_file.write('\n')
+    else:
+        for a in range(len(sol[:,0])):
+            cur_file.write(str(sol[a,:])[1:-1].replace('\n',''))
+            cur_file.write('\n')
+
+    cur_file.close()
 
 
     os.mkdir('RunImages')
@@ -136,4 +150,4 @@ def main():
     #    shutil.rmtree('RunImages')
 
 if __name__ == '__main__':
-        main()
+    main()

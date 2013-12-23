@@ -1,0 +1,9 @@
+dir: here
+dt: 0.02
+beta: 0.0
+qq: 0.0
+x_num_cell: 1.0
+y_num_cell: 1.0
+A: sweep variable
+cycles: 0
+particle number: 10

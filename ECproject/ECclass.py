@@ -60,6 +60,9 @@ class Test(object):
         self.order = 2
         self.xd = xd
         self.yd = xd
+        # if the distance between two particls is greater than this number than we don't bother with
+        # it
+        self.cutoff = 3
         # find initial conditions. Put on grid and then displace by half the lattice constant.
         
 
@@ -80,13 +83,17 @@ class Test(object):
                     continue
                 #repulsive x interparticle force of j on i
                 r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)
-                temp += (x[2*N+i]-x[2*N+j])/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+                if r_temp < self.cutoff:
+                    temp += (x[2*N+i]-x[2*N+j])/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
                 # if periodic in x we are going to need to include all the wrap around forces
                 for gama in range(self.order):
                     r_temp = pl.sqrt((gama*self.xd-(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)
-                    temp += -(gama*self.xd-(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+                    if r_temp < self.cutoff:
+                        temp += -(gama*self.xd-(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+
                     r_temp = pl.sqrt((gama*self.xd+(x[2*N+i]-x[2*N+j]))**2+(x[3*N+i]-x[3*N+j])**2)
-                    temp += (gama*self.xd+(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
+                    if r_temp < self.cutoff:
+                        temp += (gama*self.xd+(x[2*N+i]-x[2*N+j]))/(r_temp)*24.0*(2.0/(r_temp**13) - 1.0/(r_temp**7))
             #temp -= self.beta*x[i]
             xdot = pl.append(xdot,temp)
         for i in range(N):
@@ -96,14 +103,18 @@ class Test(object):
                     continue
                 #repulsive y interparticle force of j on i
                 r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(x[3*N+i]-x[3*N+j])**2)
-                temp += (x[3*N+i]-x[3*N+j])/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+                if r_temp < self.cutoff:
+                    temp += (x[3*N+i]-x[3*N+j])/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
                 # force from same particle but in other direction becasue of periodic boundar
                 # conditions
                 for gama in range(self.order):
                     r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(gama*self.yd-(x[3*N+i]-x[3*N+j]))**2)
-                    temp += -(gama*self.yd-(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+                    if r_temp < self.cutoff:
+                        temp += -(gama*self.yd-(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+
                     r_temp = pl.sqrt((x[2*N+i]-x[2*N+j])**2+(gama*self.yd+(x[3*N+i]-x[3*N+j]))**2)
-                    temp += (gama*self.yd+(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
+                    if r_temp < self.cutoff:
+                        temp += (gama*self.yd+(x[3*N+i]-x[3*N+j]))/r_temp*24.0*(2.0/(r_temp**13)-1.0/(r_temp**7)) 
 
                     #temp += -self.qq*(gama*self.yd-(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd-(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
                     #temp += self.qq* (gama*self.yd+(x[3*N+i]-x[3*N+j]))/(pl.sqrt((gama*self.yd+(x[3*N+i]-x[3*N+j]))**2+(x[2*N+i]-x[2*N+j])**2)**3)
@@ -634,5 +645,32 @@ class One_Particle_Ensble_Sin1D(object):
         x1dot = 0.0
         x2dot = xarr[0]
         x3dot = 0.0
+        return [x0dot,x1dot,x2dot,x3dot]
+
+class One_Particle_Ensble_Sin2D(object):
+    def __init__(self,A,beta):
+        self.A = A
+        print('self.A is: ' + str(self.A))
+        self.beta = beta
+        print('self.beta is: '+str(self.beta))
+        self.x_num_cell = 1.0
+        self.y_num_cell = 1.0
+        # d here is the length of the system
+        self.dx = self.x_num_cell*2.0*pl.pi
+        self.dy = self.y_num_cell*2.0*pl.pi
+        print('slef.dx: ' +str(self.dx))
+        print('slef.dy: ' +str(self.dy))
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = A
+   
+    # just make normal functions to try to pass into odeint function. Should be much faster
+    def f(self,xarr,t):
+        x0dot = self.A*(pl.sin(xarr[2])+pl.sin(xarr[3]))*pl.cos(t) - self.beta*xarr[0]
+        x1dot = self.A*(pl.sin(xarr[2])+pl.sin(xarr[3]))*pl.cos(t) - self.beta*xarr[1]
+        x2dot = xarr[0]
+        x3dot = xarr[1]
         return [x0dot,x1dot,x2dot,x3dot]
 

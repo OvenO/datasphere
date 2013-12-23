@@ -1,0 +1,10 @@
+Fist Bif:
+    One stability multiplier crosses -1 along the real axis. no imaginary component. 
+    The other multiplier was just negative tiny (not zero)
+Second Bif:
+    Second Bifurcatin point = .91875 +- .00005
+    One stability multiplier crosses 1.0 on the real axis... no imaginary component. The other one
+    didnt' plot --> should redo in order to look at the data file and see what the other actualy did
+    (I think it was just tiny like in the first bif)
+
+
