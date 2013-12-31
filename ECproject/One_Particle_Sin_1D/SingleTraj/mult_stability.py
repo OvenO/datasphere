@@ -158,6 +158,9 @@ def main():
 
     # make file to store q (periodicity)
     q_file = open("qdata.txt","w")
+    # make file to store stability multipliers
+    eig_file  = open("data.txt","w")
+    eig_file.write("eig1   eig2   A\n")
 
     dt = .0001 
     # total number of iterations to perform
@@ -171,14 +174,14 @@ def main():
     modNum = 2.0*pl.pi
     
     # initial conditions for the periodobling cascade
-    initx = pl.pi
+    initx = 2.2
     inity = 0.0
     initvx = 0.0
     initvy = 0.0
     
-    A_start = .75
+    A_start = .955
     A = A_start
-    A_max = .76
+    A_max = .970
     A_step = .0001
     
     count = 0
@@ -212,9 +215,9 @@ def main():
         thresh = .00005
         
         # change this back for bifrucation other than FIRST PI BIF
-        #loop = find_one_full_closed(sol,thresh,dt)
-        loop = pl.zeros([int(2.0*pl.pi/dt),4])
-        loop[:,2]+=pl.pi
+        loop = find_one_full_closed(sol,thresh,dt)
+        #loop = pl.zeros([int(2.0*pl.pi/dt),4])
+        #loop[:,2]+=pl.pi
 
 
         if "stop" in loop:
@@ -225,18 +228,19 @@ def main():
         if loops :
             d3ax.plot(pl.zeros(len(loop))+A,loop[:,2],loop[:,0],color="Black")
 
-        #fig = pl.figure()
-        #ax = fig.add_subplot(111)
-        ##ax.scatter([0.0,pl.pi,2.0*pl.pi],[0.0,0.0,0.0],color="Red")
-        ##ax.plot(loop[:,2],loop[:,0],":",color="Black")
-        #ax.plot(loop[:,2],loop[:,0],color="Black")
-        #ax.set_xlabel("$x_1$",fontsize=25)
-        #ax.set_ylabel("$x_2$",fontsize=25)
-        ##ax.set_xlim([pl.pi-pl.pi/3.0,pl.pi+pl.pi/3.0])
-        ##ax.set_ylim([-.3,.3])
-        #fig.tight_layout()
-        #fig.savefig("LoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
-        ##os.system("open LoopImgs/" +str(A)+".png")
+        fig = pl.figure()
+        ax = fig.add_subplot(111)
+        #ax.scatter([0.0,pl.pi,2.0*pl.pi],[0.0,0.0,0.0],color="Red")
+        #ax.plot(loop[:,2],loop[:,0],":",color="Black")
+        ax.plot(loop[:,2],loop[:,0],color="Black")
+        ax.set_xlabel("$x_1$",fontsize=25)
+        ax.set_ylabel("$x_2$",fontsize=25)
+        #ax.set_xlim([pl.pi-pl.pi/3.0,pl.pi+pl.pi/3.0])
+        #ax.set_ylim([-.3,.3])
+        fig.tight_layout()
+        fig.savefig("LoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
+        #os.system("open LoopImgs/" +str(A)+".png")
+        pl.close(fig)
        
         apx.set_sol(loop)
 
@@ -274,7 +278,7 @@ def main():
         eigs1 = pl.append(eigs1,vals[0])
         eigs2 = pl.append(eigs2,vals[1])
 
-
+        eig_file.write(str(vals[0])+" "+str(vals[1])+" "+str(A)+"\n")
 
         count+=1
         x0 = loop[-1,:]
@@ -312,11 +316,6 @@ def main():
     fig2.savefig("eig2.png")
     os.system("open eig2.png")
 
-
-    eig_file = open("data.txt","w") 
-    eig_file.write("eig1   eig2   A\n")
-    for i in range(len(eigs1)):
-        eig_file.write(str(eigs1[i])+" "+str(eigs2[i])+" "+str(A_arr[i])+"\n")
     eig_file.close()
 
     final.close()    
