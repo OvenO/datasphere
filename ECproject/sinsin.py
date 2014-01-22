@@ -17,26 +17,26 @@ def main():
     # just a last bit of the phase space plot (single plot)
     make_lphase = False
     # number of particles
-    N=5
-    qq = .5
+    N=20
+    qq = 5.0
     beta = .6
-    x_num_cell =1.0
-    y_num_cell =1.0
+    x_num_cell =5.0
+    y_num_cell =5.0
     xd = x_num_cell * 2.0 * pl.pi
     yd = y_num_cell * 2.0 * pl.pi
 
-    As = pl.zeros(2*N) + .75
+    As = pl.zeros(2*N) + 1.30
     #As = pl.zeros(N/2)+.8
     #As = pl.append(As,pl.zeros(N/2)+.4)
 
-    t = pl.arange(0,110,.05)
+    t = pl.arange(0,50,.05)
     #t = pl.arange(0,140,.1)
 
     # do we want x to be periodic
     x_periodic =True
 
     # order to which we are going to calculate the periodic inter particle forces
-    order = 5
+    order = 3
 
     x0 = pl.zeros([4*N])
 

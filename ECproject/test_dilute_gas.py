@@ -18,7 +18,7 @@ def main():
     # just a last bit of the phase space plot (single plot)
     make_lphase = False
     # number of particles
-    N=10
+    N=20
     #beta = .6
     xd = 10.0
     yd =10.0

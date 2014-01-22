@@ -179,9 +179,9 @@ def main():
     initvx = 0.0
     initvy = 0.0
     
-    A_start = .955
+    A_start = .725
     A = A_start
-    A_max = .970
+    A_max = .755
     A_step = .0001
     
     count = 0
@@ -215,9 +215,9 @@ def main():
         thresh = .00005
         
         # change this back for bifrucation other than FIRST PI BIF
-        loop = find_one_full_closed(sol,thresh,dt)
-        #loop = pl.zeros([int(2.0*pl.pi/dt),4])
-        #loop[:,2]+=pl.pi
+        #loop = find_one_full_closed(sol,thresh,dt)
+        loop = pl.zeros([int(2.0*pl.pi/dt),4])
+        loop[:,2]+=pl.pi
 
 
         if "stop" in loop:
