@@ -26,6 +26,6 @@ echo 'This is myjob running on ' `hostname`
 echo 'This is the dir ' $DIR
 # SLICED has the string value 'Poin' or 'Full' indicating weather or not we want the full solution
 # or just the poincare sections
-python again.py --file $PBS_ARRAYID --dir $DIR --sliced $SLICED --totiter $TOTITER 
+python again.py --file $PBS_ARRAYID --dir $DIR --sliced $SLICED --totiter $TOTITER --fulast $FULLLAST
 
 

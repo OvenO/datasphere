@@ -2,11 +2,9 @@
 #/opt/local/bin/python2.7
 import numpy
 import sys
-sys.path.append("/users/o/m/omyers/puthere/lib/python2.7/site-packages")
 sys.path.append("/users/o/m/omyers/datasphere/ECproject")
-sys.path.append("/users/o/m/omyers/puthere/matplotlib/build/lib.linux-x86_64-2.7")
 import ECclass as ec
-import pylab as pl
+import scipy as pl
 import os
 from scipy.integrate import odeint
 import shutil
@@ -45,8 +43,11 @@ def main():
     parser.add_argument('--file', action = 'store', dest = "file",type = int,required = True)
     parser.add_argument('--totiter', action = 'store', dest = "totIter",type = str, required = True)
     parser.add_argument('--sliced', action = 'store', dest = "sliced",type = str,required = True)
+    # if this is true we are going to just save data for the last cycle of the run
+    parser.add_argument('--fulast', action = 'store', dest = "fulast",type = str,required = True)
     inargs = parser.parse_args()
 
+    full_last = inargs.fulast
     dir = inargs.dir
     file = str(inargs.file)+'poindat.txt'
     if inargs.sliced == 'True':
@@ -136,9 +137,15 @@ def main():
     print("num_ts is: "+ str(num_ts))
     all_poin = all_poin.reshape(p_num,-1,4)
 
-    # add the poin sections back to file. Starting at 1 because we dont need to repeat the PC
-    # section that is already there.
-    for a in range(1,num_ts):
+    # add the poin sections back to file. Starting at 1 (if not full_last) because we dont need to
+    # repeat the PC section that is already there. if full_last is true then Sliced must be false
+    # and we only want the last 2*pl.pi time.
+    if full_last:
+        begin_write = num_ts - int(2.0*pl.pi/dt)
+    else:
+        begin_write = 1
+
+    for a in range(begin_write,num_ts):
 
         cur_file.write("ZONE   I="+str(len(["used","to","be","filearr"]))+" DATAPACKING=POINT")
         cur_file.write("\n") 
