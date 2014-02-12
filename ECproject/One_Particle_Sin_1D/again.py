@@ -44,7 +44,7 @@ def main():
     parser.add_argument('--totiter', action = 'store', dest = "totIter",type = str, required = True)
     parser.add_argument('--sliced', action = 'store', dest = "sliced",type = str,required = True)
     # if this is true we are going to just save data for the last cycle of the run
-    parser.add_argument('--fulast', action = 'store', dest = "fulast",type = str,required = True)
+    parser.add_argument('--fulast', action = 'store', dest = "fulast",type = bool,required = True)
     inargs = parser.parse_args()
 
     full_last = inargs.fulast
