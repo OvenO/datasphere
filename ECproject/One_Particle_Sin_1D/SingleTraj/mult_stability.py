@@ -162,9 +162,10 @@ def main():
     eig_file  = open("data.txt","w")
     eig_file.write("eig1   eig2   A\n")
 
-    dt = .0001 
+    dt = .001 
     # total number of iterations to perform
-    totIter = 10000000
+    # totIter = 10000000
+    totIter = 50000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -174,15 +175,15 @@ def main():
     modNum = 2.0*pl.pi
     
     # initial conditions for the periodobling cascade
-    initx = 2.2
+    initx = pl.pi
     inity = 0.0
     initvx = 0.0
     initvy = 0.0
     
-    A_start = .725
+    A_start = 0.2
     A = A_start
-    A_max = .755
-    A_step = .0001
+    A_max = .9
+    A_step = .002
     
     count = 0
 
@@ -310,11 +311,31 @@ def main():
     ax2 = fig2.add_subplot(111)
     ax2.plot(pl.cos(theta),pl.sin(theta))
     ax2.plot([k.real for k in eigs2],[l.imag for l in eigs2])
-    ax2.set_xlabel("Re[$\lambda_1$]",fontsize=25)
-    ax2.set_ylabel("Im[$\lambda_1$]",fontsize=25)
+    ax2.set_xlabel("Re[$\lambda_2$]",fontsize=25)
+    ax2.set_ylabel("Im[$\lambda_2$]",fontsize=25)
     fig2.tight_layout()
     fig2.savefig("eig2.png")
     os.system("open eig2.png")
+
+    fig3, ax3 = pl.subplots(2,sharex=True)
+    ax3[0].plot(A_arr,[k.real for k in eigs1],color='k')
+    ax3[1].plot(A_arr,[k.imag for k in eigs1],color='k')
+    ax3[0].set_ylabel("Re[$\lambda_1$]",fontsize = 25)
+    ax3[1].set_ylabel("Im[$\lambda_1$]",fontsize = 25)
+    ax3[1].set_xlabel("$A$",fontsize = 25)
+    fig3.tight_layout()
+    fig3.savefig("A_vs_eig1.png")
+    os.system("open A_vs_eig1.png")
+
+    fig4, ax4 = pl.subplots(2,sharex=True)
+    ax4[0].plot(A_arr,[k.real for k in eigs2], color = 'k')
+    ax4[1].plot(A_arr,[k.imag for k in eigs2], color = 'k')
+    ax4[0].set_ylabel("Re[$\lambda_2$]",fontsize = 25)
+    ax4[1].set_ylabel("Im[$\lambda_2$]",fontsize = 25)
+    ax4[1].set_xlabel("$A$",fontsize = 25)
+    fig4.tight_layout()
+    fig4.savefig("A_vs_eig2.png")
+    os.system("open A_vs_eig2.png")
 
     eig_file.close()
 

@@ -32,6 +32,52 @@ import os
 # the "t" in this case is the time array that we want our solution for. Find the youtube guy if you
 # forget what goes where. (nonlinear pendulub ex)
 
+# Here we are going to ancor a couple of charges at the boundary instead of having periodic boundary
+# conditions. SecSin1D --> Section Sin 1D
+class SecSin1D(object):
+    def __init__(self,qq,As,beta,num_cell):
+        self.qq = qq
+        self.beta = beta
+        self.num_cell = num_cell
+        # d here is the length of the system
+        self.d = num_cell*2.0*pl.pi
+        print('slef.d: ' +str(self.d))
+        # right now As is only different becasue of different particle "densities". The reason I
+        # have stated it like this is because particles with different chages would then need the qq
+        # factor to actualy be q[i]*q[j]. or something like that. Lets just see if we can achive the
+        # particle separation with the As method
+        self.As = As
+
+    def f(self,x,t):
+        N = len(x)/2
+        xdot = pl.array([])
+
+        # modulus the x for periodicity.
+        x[N:2*N]= x[N:2*N]%self.d
+        # HERE ---->> 1Dify
+        for i in range(N):
+            temp = 0.0
+            for j in range(N):
+                if i == j:
+                    continue
+                #repulsive x interparticle force of j on i
+                temp += self.qq*(x[N+i]-x[N+j])/(pl.sqrt((x[N+i]-x[N+j])**2)**3)
+
+                # Add the forces from the two ancored charges
+                # First one at x=0
+                temp += self.qq*(x[N+i]-0.0)/(pl.sqrt((x[N+i]-0.0])**2)**3)
+                # Second one at the other boundary i.e. self.d
+                temp += self.qq*(x[N+i]-self.d)/(pl.sqrt((x[N+i]-self.d])**2)**3)
+
+            # periodic force on particle i
+            temp += self.As[i]*pl.sin(x[N+i])*pl.cos(t)
+            temp -= self.beta*x[i]
+            xdot = pl.append(xdot,temp)
+        for i in range(N):
+            xdot = pl.append(xdot,x[i])
+        return xdot
+
+
 class O_func(object):
     '''O_func is just a way to acess comon functions across different classes. Or you can import
     this to use them in other ways as well. These function may either take a list or a float or
