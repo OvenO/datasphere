@@ -9,6 +9,7 @@ import os
 # class Test(object): see if we can reproduce Molucular Dynamics results from computational book
 # class SinSin2D(object):
 # class Sin1D(object):
+# class SecSin1D(object): ancored charge boundary conditions
 # class One_Particle_Ensble_Sin1D(object):
 # class HardCoreSin1D(object):
 # class CentreLineApx(object):
