@@ -66,9 +66,9 @@ class SecSin1D(object):
 
                 # Add the forces from the two ancored charges
                 # First one at x=0
-                temp += self.qq*(x[N+i]-0.0)/(pl.sqrt((x[N+i]-0.0])**2)**3)
+                temp += self.qq*(x[N+i]-0.0)/(pl.sqrt((x[N+i]-0.0)**2)**3)
                 # Second one at the other boundary i.e. self.d
-                temp += self.qq*(x[N+i]-self.d)/(pl.sqrt((x[N+i]-self.d])**2)**3)
+                temp += self.qq*(x[N+i]-self.d)/(pl.sqrt((x[N+i]-self.d)**2)**3)
 
             # periodic force on particle i
             temp += self.As[i]*pl.sin(x[N+i])*pl.cos(t)
