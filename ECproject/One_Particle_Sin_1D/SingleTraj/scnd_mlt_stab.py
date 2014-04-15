@@ -10,7 +10,7 @@ import shutil
 import time as thetime
 import argparse
 from datetime import datetime
-#from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D
 import random
 
 
@@ -148,33 +148,32 @@ def find_one_full_closed(sol,thresh,dt):
     return final
 def main():
     # do we want an image of the loops in 3D for different A?
-    loops = False
+    loops = True
     # do we want to make a movie of the stability multipliers in the complex plane?
     mk_stab_mov = True
 
     if loops:
-        fig3d = pl.figure
-        d3ax = fig.add_subplot(111,projection='3d')
+        d3fig = pl.figure()
+        d3ax = d3fig.add_subplot(111,projection='3d')
 
-    os.mkdir('LoopImgs')
+    os.mkdir('ScndLoopImgs')
     # make a directory for the stability multiplier images --> this will be a movie as a function of
     # A
-    if mk_stab_mov: os.mkdir('StabMovie')
+    if mk_stab_mov: os.mkdir('ScndStabMovie')
 
     # this variable just exsits so we dont print the A value of the bifurcation point more than
     # once.
     found_bif = False
 
     # make file to store q (periodicity)
-    q_file = open("qdata.txt","w")
+    q_file = open("scnd_qdata.txt","w")
     # make file to store stability multipliers
-    eig_file  = open("data.txt","w")
+    eig_file  = open("scnd_data.txt","w")
     eig_file.write("eig1   eig2   A\n")
 
-    dt = .001 
+    dt = .0002 
     # total number of iterations to perform
-    # totIter = 10000000
-    totIter = 50000
+    totIter = 2000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -184,15 +183,17 @@ def main():
     modNum = 2.0*pl.pi
     
     # initial conditions for the periodobling cascade
-    initx = pl.pi
+    initx = pl.pi +.1
     inity = 0.0
     initvx = 0.0
     initvy = 0.0
     
-    A_start = 0.2
+    A_start = 0.75
     A = A_start
-    A_max = .9
-    A_step = .002
+    A_max = .945
+    # good for stability multipliers
+    #A_step = .0005
+    A_step = .0025
     
     count = 0
 
@@ -202,7 +203,7 @@ def main():
     eigs2 = pl.array([])
 
     # file to write final poition of particle to
-    final = open("final_position.txt","w")
+    final = open("scnd_final_position.txt","w")
     final.write("Last position of orbit,   A\n")
     x0 = pl.array([initvx,initvy,initx,inity])
     
@@ -215,19 +216,19 @@ def main():
         print("x0")
         print(x0)
         
-        sol[:,2]=sol[:,2]%(2*pl.pi)
+        #sol[:,2]=sol[:,2]%(2*pl.pi)
         # find a single loop of the limit cycle. Might be periodoc over more than one cycle
         # returns the solution of just that loop AND the periodicity of the loop
         # takes a threshhold number. If it cant find a solution where the begining and end of the
         # trajectroy lye within this threshold value than it quits and prints an error
         #thresh is distance in the phase place
         #thresh = .01
-        thresh = .00005
+        thresh = .0006
         
         # change this back for bifrucation other than FIRST PI BIF
-        #loop = find_one_full_closed(sol,thresh,dt)
-        loop = pl.zeros([int(2.0*pl.pi/dt),4])
-        loop[:,2]+=pl.pi
+        loop = find_one_full_closed(sol,thresh,dt)
+        #loop = pl.zeros([int(2.0*pl.pi/dt),4])
+        #loop[:,2]+=pl.pi
 
 
         if "stop" in loop:
@@ -249,7 +250,7 @@ def main():
         #ax.set_xlim([pl.pi-pl.pi/3.0,pl.pi+pl.pi/3.0])
         #ax.set_ylim([-.3,.3])
         fig.tight_layout()
-        fig.savefig("LoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
+        fig.savefig("ScndLoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
         #os.system("open LoopImgs/" +str(A)+".png")
         pl.close(fig)
        
@@ -314,8 +315,8 @@ def main():
     ax1.set_xlabel("Re[$\lambda_1$]",fontsize=25)
     ax1.set_ylabel("Im[$\lambda_1$]",fontsize=25)
     fig1.tight_layout()
-    fig1.savefig("eig1.png")
-    os.system("open eig1.png")
+    fig1.savefig("scnd_eig1.png")
+    os.system("open scnd_eig1.png")
 
     fig2 = pl.figure()
     ax2 = fig2.add_subplot(111)
@@ -324,8 +325,8 @@ def main():
     ax2.set_xlabel("Re[$\lambda_2$]",fontsize=25)
     ax2.set_ylabel("Im[$\lambda_2$]",fontsize=25)
     fig2.tight_layout()
-    fig2.savefig("eig2.png")
-    os.system("open eig2.png")
+    fig2.savefig("scnd_eig2.png")
+    os.system("open scnd_eig2.png")
 
     fig3, ax3 = pl.subplots(2,sharex=True)
     ax3[0].plot(A_arr,[k.real for k in eigs1],color='k')
@@ -334,8 +335,8 @@ def main():
     ax3[1].set_ylabel("Im[$\lambda_1$]",fontsize = 25)
     ax3[1].set_xlabel("$A$",fontsize = 25)
     fig3.tight_layout()
-    fig3.savefig("A_vs_eig1.png")
-    os.system("open A_vs_eig1.png")
+    fig3.savefig("scnd_A_vs_eig1.png")
+    os.system("open scnd_A_vs_eig1.png")
 
     fig4, ax4 = pl.subplots(2,sharex=True)
     ax4[0].plot(A_arr,[k.real for k in eigs2], color = 'k')
@@ -344,8 +345,8 @@ def main():
     ax4[1].set_ylabel("Im[$\lambda_2$]",fontsize = 25)
     ax4[1].set_xlabel("$A$",fontsize = 25)
     fig4.tight_layout()
-    fig4.savefig("A_vs_eig2.png")
-    os.system("open A_vs_eig2.png")
+    fig4.savefig("scnd_A_vs_eig2.png")
+    os.system("open scnd_A_vs_eig2.png")
 
     eig_file.close()
 
@@ -371,7 +372,7 @@ def main():
     # line for stable static point
 
     if loops:
-        line = pl.arange(start_A-.01,start_A,A_step)
+        line = pl.arange(A_start-.01,A_start,A_step)
         pi_line = pl.zeros(len(line))+pl.pi
         z_line = pl.zeros(len(line))
         d3ax.plot(line,pi_line,z_line,color="Black")
@@ -379,7 +380,7 @@ def main():
         d3ax.set_ylabel("$x_1$",fontsize=25)
         d3ax.set_zlabel("$x_2$",fontsize=25)
         d3fig.tight_layout()
-        d3fig.savefig("loops.png",dpi=300)
+        d3fig.savefig("scnd_loops.png",dpi=300)
 
     if mk_stab_mov:
         for i in range(len(eigs1)):

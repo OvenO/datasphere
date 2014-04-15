@@ -14,8 +14,8 @@ from datetime import datetime
 import random
 
 
-class One_Particle_Ensble_Sin1D(object):
-    def __init__(self,A,beta,dt):
+class Two_Particle_Sin1D(object):
+    def __init__(self,A,beta,qq,dt):
         self.A = A
         print('self.A is: ' + str(self.A))
         self.beta = beta
@@ -41,11 +41,47 @@ class One_Particle_Ensble_Sin1D(object):
         # work with single (non array values) of time we need a self.dt to be defined.
 
     def J(self,which_M,t):
+        # the -1 in the lines below is for the right rounding with int()
+        # x1 is position of p1 (particle 1) 
         x1 = self.sol[int(t/self.dt)-1,2]
-        y =  self.sol[int(t/self.dt)-1,3]
+        # x2 is velocity of p1
+        x2 = self.sol[int(t/self.dt)-1,0]
+        # x3 is time
+        x3 = t
+        # x4 is position of p2
+        x4 = self.sol[int(t/self.dt)-1,3]
+        # x5 is velocity of p2
+        x5 self.sol[int(t/self.dt)-1,1]
+
+        # These are the differentials of the forces of the particles. Writen like this to make the
+        # matrix below easier to read f14 is force of p2 on p1 _dx1 is derivitive with respect to x1
+        df14_dx1 = 
+        df14_dx4 = 
+        df41_dx1 =
+        df41_dx4 = 
+
+
         # define the matrix elements of the time dependent jacobian
-        M11 = 0.0
-        M12 = 1.0
+        jacobian = pl.array([ \
+        [0.0                                   , 1.0       , 0.0                          ,0.0                                   , 0.0]
+        [-self.A*pl.cos(x1)*pl.cos(x3)+df14_dx1, -self.beta, self.A*pl.sin(x1)*pl.sin(x3) ,df14_dx4                              , 0.0]
+        [0.0                                   , 0.0       , 0.0                          ,0.0                                   , 0.0]
+        [0.0                                   , 0.0       , 0.0                          ,0.0                                   , 1.0]
+        [df41_dx1                              , 0.0       , self.A*pl.sin(x4)*pl.sin(x3) ,-self.A*pl.cos(x4)*pl.cos(x3)+df41_dx4, -self.beta]\
+        ])
+
+
+        # Keep this incase we can't get the actual array version to work and we switch back to wanting
+        # to do it with the M## variables
+        #jacobian = pl.array([ \
+        #[M11=0.0                                       M12=1.0      M13=0.0                             M14=0.0                                     M15=0.0]
+        #[M21=-self.A*pl.cos(x1)*pl.cos(x3)+df14_dx1    M22=0.0      M23=self.A*pl.sin(x1)*pl.sin(x3)    M24=df14_dx4                                M25=0.0]
+        #[M31=0.0                                       M32=0.0      M33=0.0                             M34=0.0                                     M35=0.0]
+        #[M41=0.0                                       M42=0.0      M43=0.0                             M44=0.0                                     M45=1.0]
+        #[M51=df41_dx1                                  M52=0.0      M53=self.A*pl.sin(x4)*pl.sin(x3)    M54=-self.A*pl.cos(x4)*pl.cos(x3)+df41_dx4  M55=0.0]\
+        #]
+
+
         M21 = self.A*pl.cos(x1)*pl.cos(t)
         M22 = -self.beta
 
@@ -179,6 +215,7 @@ def main():
     time = pl.arange(0.0,totTime,dt)
     
     beta = .6
+    qq = 1.0
 
     # how many cells is till periodicity use x = n*pi/k (n must be even #) modNum = 2*pl.pi/k
     modNum = 2.0*pl.pi
@@ -210,7 +247,7 @@ def main():
     while A < A_max:
         # initial conditions vector
         # set up: [xdot,ydot,x,y]
-        apx = One_Particle_Ensble_Sin1D(A,beta,dt)
+        apx = Two_Particle_Sin1D(A,beta,qq,dt)
         sol = odeint(apx.f,x0,time)
         print("x0")
         print(x0)

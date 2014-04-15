@@ -275,6 +275,9 @@ class Sin1D(object):
                 # All of the forces coming from the 'same' paricle but from other 'cells' due to the
                 # periodic contrains can be wraped up in a sum that converges to an aswer that can
                 # be expressed in terms of polygamma functions (se pg 92 of notebook).
+                # Note on the sign (xi-xj or xj-xi). Changing the sign of the xi-xj term (i.e. which
+                # particle are we considering forces on) changes the direction of the force
+                # apropriately.
                 temp += self.qq*(polygamma(1,(self.d+x[N+i]-x[N+j])/self.d)-polygamma(1,1.0-((x[N+i]-x[N+j])/self.d)))/(self.d**2)
             # periodic force on particle i
             temp += self.As[i]*pl.sin(x[N+i])*pl.cos(t)
