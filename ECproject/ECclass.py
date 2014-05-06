@@ -53,29 +53,30 @@ class OurHMF(object):
         # x[i] is the velocity of i^th particle
 
         # This initilazation should be slightly faster than re-doing "len(x)"
-        xdot = pl.zeros(self.N*2)
+        xdot = pl.array([])
 
         for i in range(self.N):
             # temp is to have a variable to keep adding terms of the "field" and the interactions to
             # so we can do things peicewise.  start with the field contribution
             temp = -(self.O_mega+self.A*pl.cos(t))*pl.sin(x[self.N+i])
+            #print('1st temp:' + str(temp))
             for j in range(self.N):
                 if i == j:
                     continue
-
                 # find phi_i and phi_j needed in the calculation of the interaction
                 phi_i = (pl.pi/self.N)*((i-1)*2+pl.sin(x[self.N+i]))
                 phi_j = (pl.pi/self.N)*((j-1)*2+pl.sin(x[self.N+j]))
                 # interaction force of j on i
                 temp += -self.B*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
             
+            #print('2nd temp:' + str(temp))
             # What we have as temp is the second derivative of the position i.e v_dot -> so these
             # are the first in the array
             xdot = pl.append(xdot,temp)
+            #print('xdot: ' + str(xdot))
         # The second in the array are just the first deriviative of the positions i.e v wich is what
         # were the first values in the input array.
-        for i in range(self.N):
-            xdot = pl.append(xdot,x[i])
+        xdot = pl.append(xdot,x[:self.N])
         
         return xdot
 
