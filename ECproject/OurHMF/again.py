@@ -151,6 +151,9 @@ def main():
     print('about to run odeint')
     sol = odeint(apx.f,x0,time)
     print('ran. shape(sol): ' + str(pl.shape(sol)))
+    print('first 10 lines of sol:')
+    for i in range(10):
+        print(str(sol[i,:]))
 
     if sliced:
         for a in range(len(sol[:,0])):
