@@ -148,7 +148,9 @@ def main():
         x0 = init[-1,:]
     else: x0 = init
     
+    print('about to run odeint')
     sol = odeint(apx.f,x0,time)
+    print('ran. shape(sol): ' + str(pl.shape(sol)))
 
     if sliced:
         for a in range(len(sol[:,0])):
