@@ -173,7 +173,7 @@ def main():
 
     dt = .0002 
     # total number of iterations to perform
-    totIter = 2000000
+    totIter = 5000000
     totTime = totIter*dt
     time = pl.arange(0.0,totTime,dt)
     
@@ -188,12 +188,12 @@ def main():
     initvx = 0.0
     initvy = 0.0
     
-    A_start = 0.75
+    A_start = 0.956
     A = A_start
-    A_max = .945
+    A_max = .959
     # good for stability multipliers
     #A_step = .0005
-    A_step = .0025
+    A_step = .000005
     
     count = 0
 
@@ -223,7 +223,7 @@ def main():
         # trajectroy lye within this threshold value than it quits and prints an error
         #thresh is distance in the phase place
         #thresh = .01
-        thresh = .0006
+        thresh = .0003
         
         # change this back for bifrucation other than FIRST PI BIF
         loop = find_one_full_closed(sol,thresh,dt)
@@ -240,19 +240,19 @@ def main():
             d3ax.plot(pl.zeros(len(loop))+A,loop[:,2],loop[:,0],color="Black")
 
 
-        fig = pl.figure()
-        ax = fig.add_subplot(111)
-        #ax.scatter([0.0,pl.pi,2.0*pl.pi],[0.0,0.0,0.0],color="Red")
-        #ax.plot(loop[:,2],loop[:,0],":",color="Black")
-        ax.plot(loop[:,2],loop[:,0],color="Black")
-        ax.set_xlabel("$x_1$",fontsize=25)
-        ax.set_ylabel("$x_2$",fontsize=25)
-        #ax.set_xlim([pl.pi-pl.pi/3.0,pl.pi+pl.pi/3.0])
-        #ax.set_ylim([-.3,.3])
-        fig.tight_layout()
-        fig.savefig("ScndLoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
-        #os.system("open LoopImgs/" +str(A)+".png")
-        pl.close(fig)
+        #fig = pl.figure()
+        #ax = fig.add_subplot(111)
+        ##ax.scatter([0.0,pl.pi,2.0*pl.pi],[0.0,0.0,0.0],color="Red")
+        ##ax.plot(loop[:,2],loop[:,0],":",color="Black")
+        #ax.plot(loop[:,2],loop[:,0],color="Black")
+        #ax.set_xlabel("$x_1$",fontsize=25)
+        #ax.set_ylabel("$x_2$",fontsize=25)
+        ##ax.set_xlim([pl.pi-pl.pi/3.0,pl.pi+pl.pi/3.0])
+        ##ax.set_ylim([-.3,.3])
+        #fig.tight_layout()
+        #fig.savefig("ScndLoopImgs/"+str(A)+".png",dpi = 300,transparent=True)
+        ##os.system("open LoopImgs/" +str(A)+".png")
+        #pl.close(fig)
        
         apx.set_sol(loop)
 

@@ -6,6 +6,7 @@ from scipy.special import polygamma
 import os
 
 # List of classes and 1-2 word descriptions:
+# class OurHMF(object): our special Hamiltonian Mean field theory.
 # class Test(object): see if we can reproduce Molucular Dynamics results from computational book
 # class SinSin2D(object):
 # class Sin1D(object):
@@ -32,6 +33,54 @@ import os
 # this is the form of the array "xarr" that is being passed into the the f(self,xarr,t) function.
 # the "t" in this case is the time array that we want our solution for. Find the youtube guy if you
 # forget what goes where. (nonlinear pendulub ex)
+
+#**************************************************************************************************
+#**************************************************************************************************
+class OurHMF(object):
+   
+    def __init__(self,N,O_mega,A,B):
+        # O_mega is the natural frequency omega_0 over the driving frequency gamma?
+        self.O_mega = O_mega
+        # dimensionless driving amplituede 
+        self.A = A
+        # interaction stregth (dimless)
+        self.B = B
+        # number of particles
+        self.N = N
+
+    def f(self,x,t):
+        # x[N+i] is the position of i^th particle
+        # x[i] is the velocity of i^th particle
+
+        # This initilazation should be slightly faster than re-doing "len(x)"
+        xdot = pl.zeros(self.N*2)
+
+        for i in range(self.N):
+            # temp is to have a variable to keep adding terms of the "field" and the interactions to
+            # so we can do things peicewise.  start with the field contribution
+            temp = -(O_mega+A*pl.cos(t))*pl.sin(x[self.N+i])
+            for j in range(self.N):
+                if i == j:
+                    continue
+
+                # find phi_i and phi_j needed in the calculation of the interaction
+                phi_i = (pl.pi/self.N)*((i-1)*2+pl.sin(x[self.N+i]))
+                phi_j = (pl.pi/self.N)*((j-1)*2+pl.sin(x[self.N+j]))
+                # interaction force of j on i
+                temp += -self.B*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
+            
+            # What we have as temp is the second derivative of the position i.e v_dot -> so these
+            # are the first in the array
+            xdot = pl.append(xdot,temp)
+        # The second in the array are just the first deriviative of the positions i.e v wich is what
+        # were the first values in the input array.
+        for i in range(self.N):
+            xdot = pl.append(xdot,x[i])
+        
+        return xdot
+
+#**************************************************************************************************
+#**************************************************************************************************
 
 # Here we are going to ancor a couple of charges at the boundary instead of having periodic boundary
 # conditions. SecSin1D --> Section Sin 1D
