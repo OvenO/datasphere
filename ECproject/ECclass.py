@@ -58,7 +58,7 @@ class OurHMF(object):
         for i in range(self.N):
             # temp is to have a variable to keep adding terms of the "field" and the interactions to
             # so we can do things peicewise.  start with the field contribution
-            temp = -(self.O_mega+A*pl.cos(t))*pl.sin(x[self.N+i])
+            temp = -(self.O_mega+self.A*pl.cos(t))*pl.sin(x[self.N+i])
             for j in range(self.N):
                 if i == j:
                     continue
