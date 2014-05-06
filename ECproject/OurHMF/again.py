@@ -96,10 +96,10 @@ def main():
         cycles = float(var_line.split()[-1])
 
     if var_str!='N':
-        N = float(lns[3].split()[-1])
+        N = int(lns[3].split()[-1])
         print('N: '+str(N))
     else:
-        N = float(var_line.split()[-1])
+        N = int(var_line.split()[-1])
 
     # particle particle interaction stregth
     if var_str!='B':
