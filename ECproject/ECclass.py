@@ -64,8 +64,8 @@ class OurHMF(object):
                 if i == j:
                     continue
                 # find phi_i and phi_j needed in the calculation of the interaction
-                phi_i = (pl.pi/self.N)*((i-1)*2+pl.sin(x[self.N+i]))
-                phi_j = (pl.pi/self.N)*((j-1)*2+pl.sin(x[self.N+j]))
+                phi_i = (pl.pi/self.N)*(i*2+pl.sin(x[self.N+i]))
+                phi_j = (pl.pi/self.N)*(j*2+pl.sin(x[self.N+j]))
                 # interaction force of j on i
                 temp += -self.B*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
             

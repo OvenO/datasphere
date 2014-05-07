@@ -102,9 +102,9 @@ def main():
         N = int(var_line.split()[-1])
 
     # particle particle interaction stregth
-    if var_str!='B':
+    if var_str!='qq':
         B = float(lns[4].split()[-1])
-        print('B: '+str(B))
+        print('qq: '+str(B))
     else:
         B = float(var_line.split()[-1])
 
@@ -119,6 +119,12 @@ def main():
         print('A: '+str(A))
     else:
         A = float(var_line.split()[-1])
+
+    if var_str!='beta':
+        beta = float(lns[7].split()[-1])
+        print('beta: '+str(beta))
+    else:
+        beta = float(var_line.split()[-1])
 
     totTime = totIter*dt
     print("dt is: " + str(dt))
