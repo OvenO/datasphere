@@ -146,7 +146,7 @@ def main():
     cur_file = open(file,"w")
     cur_file.write(var_line)
     
-    apx = ec.OurHMF(N,O_mega,A,B)
+    apx = ec.OurHMF(N,B)
     
     # this statment makes it so that if we want to run again after we have already run then we can. This
     # grabs the last line to use as the first initial conditions

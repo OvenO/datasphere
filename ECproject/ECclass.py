@@ -38,13 +38,9 @@ import os
 #**************************************************************************************************
 class OurHMF(object):
    
-    def __init__(self,N,O_mega,A,B):
-        # O_mega is the natural frequency omega_0 over the driving frequency gamma?
-        self.O_mega = O_mega
-        # dimensionless driving amplituede 
-        self.A = A
+    def __init__(self,N,I):
         # interaction stregth (dimless)
-        self.B = B
+        self.I = I
         # number of particles
         self.N = N
 
@@ -58,16 +54,22 @@ class OurHMF(object):
         for i in range(self.N):
             # temp is to have a variable to keep adding terms of the "field" and the interactions to
             # so we can do things peicewise.  start with the field contribution
-            temp = -(self.O_mega+self.A*pl.cos(t))*pl.sin(x[self.N+i])
+            temp = 0.0
             #print('1st temp:' + str(temp))
             for j in range(self.N):
                 if i == j:
                     continue
                 # find phi_i and phi_j needed in the calculation of the interaction
-                phi_i = (pl.pi/self.N)*(i*2+pl.sin(x[self.N+i]))
-                phi_j = (pl.pi/self.N)*(j*2+pl.sin(x[self.N+j]))
+                #phi_i = (pl.pi/self.N)*(i*2+x[self.N+i])
+                #phi_j = (pl.pi/self.N)*(j*2+x[self.N+j])
+                phi_i = (pl.pi/self.N)*i*2+x[self.N+i]
+                phi_j = (pl.pi/self.N)*j*2+x[self.N+j]
                 # interaction force of j on i
-                temp += -self.B*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
+                #temp += -(pl.pi * self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
+                # THis is right but try rescaling to compair with HMF model
+                #temp += -(pl.pi * self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)
+                # rescaled one
+                temp += -(self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)
             
             #print('2nd temp:' + str(temp))
             # What we have as temp is the second derivative of the position i.e v_dot -> so these
@@ -79,6 +81,50 @@ class OurHMF(object):
         xdot = pl.append(xdot,x[:self.N])
         
         return xdot
+
+#class OurHMF(object):
+#   
+#    def __init__(self,N,O_mega,A,B):
+#        # O_mega is the natural frequency omega_0 over the driving frequency gamma?
+#        self.O_mega = O_mega
+#        # dimensionless driving amplituede 
+#        self.A = A
+#        # interaction stregth (dimless)
+#        self.B = B
+#        # number of particles
+#        self.N = N
+#
+#    def f(self,x,t):
+#        # x[N+i] is the position of i^th particle
+#        # x[i] is the velocity of i^th particle
+#
+#        # This initilazation should be slightly faster than re-doing "len(x)"
+#        xdot = pl.array([])
+#
+#        for i in range(self.N):
+#            # temp is to have a variable to keep adding terms of the "field" and the interactions to
+#            # so we can do things peicewise.  start with the field contribution
+#            temp = -(self.O_mega+self.A*pl.cos(t))*pl.sin(x[self.N+i])
+#            #print('1st temp:' + str(temp))
+#            for j in range(self.N):
+#                if i == j:
+#                    continue
+#                # find phi_i and phi_j needed in the calculation of the interaction
+#                phi_i = (pl.pi/self.N)*(i*2+pl.sin(x[self.N+i]))
+#                phi_j = (pl.pi/self.N)*(j*2+pl.sin(x[self.N+j]))
+#                # interaction force of j on i
+#                temp += -self.B*pl.sin(phi_i-phi_j)*pl.cos(x[self.N+i])
+#            
+#            #print('2nd temp:' + str(temp))
+#            # What we have as temp is the second derivative of the position i.e v_dot -> so these
+#            # are the first in the array
+#            xdot = pl.append(xdot,temp)
+#            #print('xdot: ' + str(xdot))
+#        # The second in the array are just the first deriviative of the positions i.e v wich is what
+#        # were the first values in the input array.
+#        xdot = pl.append(xdot,x[:self.N])
+#        
+#        return xdot
 
 #**************************************************************************************************
 #**************************************************************************************************
