@@ -1,0 +1,32 @@
+#!/bin/bash
+# This job needs 1 compute node with 1 processor per node.
+#PBS -l nodes=1:ppn=1
+# It should be allowed to run for up to x hour.
+#PBS -l walltime=30:00:00
+# Name of job.
+#PBS -N agnHMF
+# Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
+#PBS -j oe   
+
+# Using /tmp should speed things up. This file is local to each node. gzip the file and send it to
+# its final destination ins /Data/...
+
+# The reason we add in the inargs.file (which is just an iteger) is becase we need the directory
+# in the /tmp file to be compleately unique for each file. Becasue some files might be handeld
+# by the same node we need to distiguesh. I also want the file being delt with in a directory
+# becasue we also need an info file that goes with it -> if we have two different systems
+# running and the node is handeling both of them then they would end up with the same info file.
+# The same thing could happen with the poindat.txt files too but that is much less likely.
+mkdir /tmp/$DIR$PBS_ARRAYID
+cp /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/$PBS_ARRAYID'poindat.txt' /tmp/$DIR$PBS_ARRAYID/
+cp /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/'info.txt' /tmp/$DIR$PBS_ARRAYID/
+cd /users/o/m/omyers/datasphere/ECproject/HMF
+echo 'This is myjob running on ' `hostname`
+echo 'This is the dir ' $DIR
+# SLICED has the string value 'Poin' or 'Full' indicating weather or not we want the full solution
+# or just the poincare sections
+python again.py --file $PBS_ARRAYID --dir $DIR --sliced $SLICED --totiter $TOTITER 
+wait
+rm /users/o/m/omyers/Data/EC/2DBlock/Old/$DIR/$PBS_ARRAYID'poindat.txt'
+
+
