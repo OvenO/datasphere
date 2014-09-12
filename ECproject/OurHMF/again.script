@@ -4,7 +4,7 @@
 # It should be allowed to run for up to x hour.
 #PBS -l walltime=30:00:00
 # Name of job.
-#PBS -N agnS1D
+#PBS -N OurHMF
 # Join STDERR TO STDOUT.  (omit this if you want separate STDOUT AND STDERR)
 #PBS -j oe   
 

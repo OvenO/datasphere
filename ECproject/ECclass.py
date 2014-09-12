@@ -62,7 +62,7 @@ class HMF(object):
                 if i == j:
                     continue
                 # interaction force of j on i
-                temp += -(self.I/(2.0*self.N))*pl.sin(x[self.N+i]-x[self.N+j])
+                temp += (self.I/(2.0*self.N))*pl.sin(x[self.N+i]-x[self.N+j])
             
             #print('2nd temp:' + str(temp))
             # What we have as temp is the second derivative of the position i.e v_dot -> so these
@@ -109,7 +109,7 @@ class OurHMF(object):
                 # THis is right but try rescaling to compair with HMF model
                 #temp += -(pl.pi * self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)
                 # rescaled one
-                temp += -(self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)
+                temp += (self.I/(2.0*self.N))*pl.sin(phi_i-phi_j)
             
             #print('2nd temp:' + str(temp))
             # What we have as temp is the second derivative of the position i.e v_dot -> so these
